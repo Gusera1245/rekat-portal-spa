@@ -1,168 +1,178 @@
 <!doctype html>
 <html lang="id">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>REKAT Portal — Ruang Edukasi Kolaborasi Aktivitas Trensains</title>
-<meta name="description" content="REKAT: Ruang Edukasi Kolaborasi Aktivitas Trensains Tebuireng." />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>REKAT — Portal Login & Dashboard</title>
+<meta name="description" content="Portal REKAT — Ruang Edukasi Kolaborasi Aktivitas Trensains Tebuireng" />
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
-  /* Ensure font-sans uses Inter */
+  /* Ensure font-sans uses Inter and apply global background */
   body {
     font-family: 'Inter', sans-serif;
-    min-height: 100vh;
-    margin: 0;
-    padding: 1rem;
-    /* Latar belakang gradien biru muda untuk mendukung efek glassmorphism */
-    background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%); 
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
   .view-container {
     transition: opacity 0.3s ease-in-out;
   }
+  /* Custom glass style for form inputs: white/light-blue tint on glass */
+  .glass-input {
+    /* bg-white/50: 50% white transparency */
+    /* border-blue-200/50: soft blue border */
+    @apply bg-white/50 border border-blue-200/50 shadow-inner text-gray-800 placeholder-gray-500 transition duration-150;
+  }
+
+  /* Adjustments for the right panel to ensure content fits */
+  .flex-1\.3 {
+    flex: 1.3;
+  }
 </style>
 </head>
-<body class="p-4 sm:p-8">
+<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-50 to-indigo-100 p-4 sm:p-6 font-sans">
 
-<!-- Container dengan efek Glassmorphism (Classic White Glass) -->
-<div id="app-container" class="w-full max-w-xl bg-white/40 backdrop-blur-2xl border border-white/80 rounded-3xl shadow-2xl p-6 sm:p-8 transform transition-all duration-500">
-  
-  <!-- Judul utama akan diperbarui oleh JavaScript (ex: Masuk ke Portal REKAT) -->
-  <h1 id="mainTitle" class="text-3xl font-extrabold text-gray-800 mb-2">Memuat Aplikasi...</h1>
-  
-  <!-- Tagline REKAT yang sudah dikoreksi -->
-  <p class="text-gray-600 text-sm mb-6 border-b pb-3">REKAT: Ruang Edukasi Kolaborasi Aktivitas Trensains Tebuireng</p>
-
-  <!-- 1. AUTH VIEW (LOGIN/REGISTER) -->
-  <div id="view-auth" class="view-container hidden">
-    <!-- Login Form -->
-    <div id="form-login" class="space-y-4">
-      <h2 class="text-xl font-bold mb-4 text-gray-700">Masuk ke REKAT</h2>
-      <input type="email" id="loginEmail" placeholder="Email" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 bg-white/70">
-      <input type="password" id="loginPassword" placeholder="Password" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 bg-white/70">
-      <button id="btnLogin" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold p-3 rounded-lg shadow-md transition duration-200">Masuk</button>
-      <button id="showRegister" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold p-3 rounded-lg border border-gray-300 transition duration-150">Belum punya akun? Daftar</button>
+  <!-- Main Application Container (Glassmorphism Effect) -->
+  <div id="app-container" class="flex flex-col md:flex-row w-full max-w-4xl bg-white/70 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden">
+    
+    <!-- Left Panel: Brand and Motto (Fixed Blue) -->
+    <div class="flex-1 bg-gradient-to-br from-blue-600 to-blue-500 text-white p-8 flex flex-col justify-center shadow-lg">
+      <div class="text-3xl font-extrabold mb-2">REKAT</div>
+      <div class="text-xl font-semibold opacity-95">Ruang Edukasi Kolaborasi Aktivitas Trensains Tebuireng</div>
+      <p class="text-sm opacity-80 mt-4 border-t border-white/30 pt-4">
+        Platform terintegrasi untuk mendukung aktivitas edukasi, kolaborasi, dan administrasi sekolah.
+      </p>
     </div>
 
-    <!-- Register Form -->
-    <div id="form-register" class="hidden space-y-4">
-      <h2 class="text-xl font-bold mb-4 text-gray-700">Daftar Akun Baru</h2>
-      <input type="email" id="regEmail" placeholder="Email" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 bg-white/70">
-      <input type="password" id="regPassword" placeholder="Password (min 6 karakter)" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 bg-white/70">
-      <input type="password" id="regPassword2" placeholder="Ulangi Password" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 bg-white/70">
-      <button id="btnRegister" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold p-3 rounded-lg shadow-md transition duration-200">Daftar Sekarang</button>
-      <button id="showLogin" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold p-3 rounded-lg border border-gray-300 transition duration-150">Sudah punya akun? Masuk</button>
-    </div>
-  </div>
+    <!-- Right Panel: Dynamic Content (Auth, Dashboard) -->
+    <div class="flex-1\.3 p-8 relative">
+      <h1 id="mainTitle" class="text-2xl font-bold mb-6 text-gray-800">Memuat Portal...</h1>
 
-  <!-- 2. PROFILE SETUP VIEW -->
-  <div id="view-profile-setup" class="view-container hidden">
-    <h2 class="text-2xl font-bold text-gray-800 mb-6">Lengkapi Profil</h2>
-    <div class="space-y-4">
-      <p class="text-gray-600">Anda perlu melengkapi profil sebelum mengakses Dashboard.</p>
-      <input type="text" id="setupName" placeholder="Nama Lengkap" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 bg-white/70">
-      <select id="setupRole" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 bg-white/70 appearance-none">
-        <option value="" disabled selected>Pilih Peran Anda</option>
-        <option>Guru Mapel</option><option>Staf TU</option><option>Sarana & Prasarana</option>
-        <option>Kurikulum</option><option>Kesiswaan</option><option>Bendahara</option><option>KTU</option>
-      </select>
-      <button id="saveSetupProfile" class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold p-3 rounded-lg shadow-md transition duration-200">Simpan Profil & Lanjutkan</button>
-    </div>
-  </div>
-
-  <!-- 3. DASHBOARD VIEW -->
-  <div id="view-dashboard" class="view-container hidden">
-    <!-- Profile Display -->
-    <div id="profileView" class="space-y-6">
-      <h2 class="text-2xl font-bold text-blue-700 mb-4">Dashboard Saya</h2>
-      <div class="flex items-center gap-4 border border-blue-300/50 p-4 rounded-xl bg-blue-100/30">
-        <div id="profilePhotoContainer" class="w-20 h-20 rounded-full overflow-hidden flex items-center justify-center bg-blue-600 text-white shadow-lg flex-shrink-0">
-          <div id="profilePhotoInitial" class="font-bold text-3xl">U</div>
+      <!-- 1. AUTH VIEW (LOGIN/REGISTER) -->
+      <div id="view-auth" class="view-container">
+        <!-- Login Form -->
+        <div id="form-login" class="space-y-4">
+          <input type="email" id="loginEmail" placeholder="Email" class="w-full p-3 border rounded-lg focus:ring-blue-500 glass-input">
+          <input type="password" id="loginPassword" placeholder="Password" class="w-full p-3 border rounded-lg focus:ring-blue-500 glass-input">
+          <button id="btnLogin" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold p-3 rounded-lg shadow-md transition duration-200">Masuk</button>
+          <button id="showRegister" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold p-3 rounded-lg border border-gray-300 transition duration-150">Belum punya akun? Daftar</button>
         </div>
-        <div class="flex-grow">
-          <div id="displayName" class="font-bold text-xl text-gray-800"></div>
-          <div id="displayRole" class="text-md text-blue-700 font-semibold"></div>
-          <div id="displayEmail" class="text-sm text-gray-500 mt-1"></div>
+
+        <!-- Register Form -->
+        <div id="form-register" class="hidden space-y-4">
+          <input type="email" id="regEmail" placeholder="Email" class="w-full p-3 border rounded-lg focus:ring-blue-500 glass-input">
+          <input type="password" id="regPassword" placeholder="Password (min 6 karakter)" class="w-full p-3 border rounded-lg focus:ring-blue-500 glass-input">
+          <input type="password" id="regPassword2" placeholder="Ulangi Password" class="w-full p-3 border rounded-lg focus:ring-blue-500 glass-input">
+          <button id="btnRegister" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold p-3 rounded-lg shadow-md transition duration-200">Daftar Sekarang</button>
+          <button id="showLogin" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold p-3 rounded-lg border border-gray-300 transition duration-150">Sudah punya akun? Masuk</button>
         </div>
       </div>
-      
-      <div class="text-xs text-gray-500 border-t pt-2">
-        User ID (Kolaborasi): <code id="userIdDisplay" class="font-mono text-xs bg-gray-100/70 p-1 rounded-md break-all"></code>
+
+      <!-- 2. PROFILE SETUP VIEW -->
+      <div id="view-profile-setup" class="view-container hidden">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">Lengkapi Profil</h2>
+        <div class="space-y-4">
+          <p class="text-gray-600 text-sm">Anda hanya perlu mengisi ini sekali.</p>
+          <input type="text" id="setupName" placeholder="Nama Lengkap" class="w-full p-3 border rounded-lg focus:ring-blue-500 glass-input">
+          <select id="setupRole" class="w-full p-3 border rounded-lg focus:ring-blue-500 glass-input appearance-none">
+            <option value="" disabled selected>Pilih Peran Anda</option>
+            <option>Guru Mapel</option><option>Staf TU</option><option>Sarana & Prasarana</option>
+            <option>Kurikulum</option><option>Kesiswaan</option><option>Bendahara</option><option>KTU</option>
+          </select>
+          <button id="saveSetupProfile" class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold p-3 rounded-lg shadow-md transition duration-200">Simpan Profil & Lanjutkan</button>
+        </div>
       </div>
 
-      <button id="editProfileBtn" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-semibold p-3 rounded-lg shadow-md transition duration-200 mt-4">Ubah Profil</button>
-      <button id="logoutBtn" class="w-full bg-red-500 hover:bg-red-600 text-white font-semibold p-3 rounded-lg shadow-md transition duration-200">Keluar (Logout)</button>
-    </div>
+      <!-- 3. DASHBOARD VIEW -->
+      <div id="view-dashboard" class="view-container hidden">
+        <!-- Profile Display -->
+        <div id="profileView" class="space-y-6">
+          <h2 class="text-xl font-bold text-blue-700 mb-4">Ringkasan Profil</h2>
+          <div class="flex items-center gap-4 border border-blue-400/30 p-4 rounded-xl bg-blue-50/70 shadow-inner">
+            <div id="profilePhotoContainer" class="w-20 h-20 rounded-full overflow-hidden flex items-center justify-center bg-blue-600 text-white shadow-lg flex-shrink-0">
+              <div id="profilePhotoInitial" class="font-bold text-3xl">U</div>
+            </div>
+            <div class="flex-grow">
+              <div id="displayName" class="font-bold text-xl text-gray-800"></div>
+              <div id="displayRole" class="text-md text-blue-700 font-semibold"></div>
+              <div id="displayEmail" class="text-sm text-gray-500 mt-1"></div>
+            </div>
+          </div>
+          
+          <div class="text-xs text-gray-500 border-t pt-2 border-blue-200/50">
+            User ID (Kolaborasi): <code id="userIdDisplay" class="font-mono text-xs bg-gray-100/70 p-1 rounded-md break-all"></code>
+          </div>
 
-    <!-- Form Edit Profil (Hidden by default) -->
-    <div id="profileEdit" class="hidden space-y-4">
-      <h2 class="text-2xl font-bold text-gray-800 mb-4">Edit Profil</h2>
-      <input type="text" id="profileNameInput" placeholder="Nama Lengkap" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 bg-white/70">
-      <select id="profileRoleInput" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 bg-white/70 appearance-none">
-        <option value="" disabled selected>Pilih Peran</option>
-        <option value="Guru Mapel">Guru Mapel</option><option value="Staf TU">Staf TU</option><option value="Sarana & Prasarana">Sarana & Prasarana</option>
-        <option value="Kurikulum">Kurikulum</option><option value="Kesiswaan">Kesiswaan</option><option value="Bendahara">Bendahara</option><option value="KTU">KTU</option>
-      </select>
+          <button id="editProfileBtn" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-semibold p-3 rounded-lg shadow-md transition duration-200 mt-4">Ubah Profil</button>
+          <button id="logoutBtn" class="w-full bg-red-500 hover:bg-red-600 text-white font-semibold p-3 rounded-lg shadow-md transition duration-200">Keluar (Logout)</button>
+        </div>
 
-      <label for="profilePhotoInput" class="block w-full text-center bg-gray-200/50 hover:bg-gray-200 text-gray-700 font-semibold p-3 rounded-lg border border-gray-300 cursor-pointer transition duration-150">
-        Pilih Foto Profil Baru (Maks 5MB)
-      </label>
-      <input type="file" id="profilePhotoInput" accept="image/*" class="hidden">
-      <div id="fileNameDisplay" class="text-sm text-gray-500 truncate">Belum ada file dipilih.</div>
+        <!-- Form Edit Profil (Hidden by default) -->
+        <div id="profileEdit" class="hidden space-y-4">
+          <h2 class="text-xl font-bold text-gray-800 mb-4">Edit Profil</h2>
+          <input type="text" id="profileNameInput" placeholder="Nama Lengkap" class="w-full p-3 border rounded-lg focus:ring-blue-500 glass-input">
+          <select id="profileRoleInput" class="w-full p-3 border rounded-lg focus:ring-blue-500 glass-input appearance-none">
+            <option value="" disabled selected>Pilih Peran</option>
+            <option value="Guru Mapel">Guru Mapel</option><option value="Staf TU">Staf TU</option><option value="Sarana & Prasarana">Sarana & Prasarana</option>
+            <option value="Kurikulum">Kurikulum</option><option value="Kesiswaan">Kesiswaan</option><option value="Bendahara">Bendahara</option><option value="KTU">KTU</option>
+          </select>
 
-      <button id="saveProfileBtn" class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold p-3 rounded-lg shadow-md transition duration-200">Simpan Perubahan</button>
-      <button id="cancelEditBtn" class="w-full bg-gray-400 hover:bg-gray-500 text-white font-semibold p-3 rounded-lg transition duration-150">Batal</button>
-    </div>
+          <label for="profilePhotoInput" class="block w-full text-center bg-gray-200/50 hover:bg-gray-200 text-gray-700 font-semibold p-3 rounded-lg border border-gray-300 cursor-pointer transition duration-150">
+            Pilih Foto Profil Baru (Maks 5MB)
+          </label>
+          <input type="file" id="profilePhotoInput" accept="image/*" class="hidden">
+          <div id="fileNameDisplay" class="text-sm text-gray-500 truncate">Belum ada file dipilih.</div>
+
+          <button id="saveProfileBtn" class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold p-3 rounded-lg shadow-md transition duration-200">Simpan Perubahan</button>
+          <button id="cancelEditBtn" class="w-full bg-gray-400 hover:bg-gray-500 text-white font-semibold p-3 rounded-lg transition duration-150">Batal</button>
+        </div>
+      </div>
+
+      <!-- 4. LOADING VIEW -->
+      <div id="view-loading" class="view-container text-center p-10 absolute inset-0 bg-white/50 backdrop-blur-sm flex flex-col items-center justify-center rounded-lg">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p class="text-gray-600 font-semibold">Memuat data dan mengautentikasi...</p>
+      </div>
+
+    </div> <!-- End of Right Panel -->
+  </div> <!-- End of Main Container -->
+
+  <!-- Global Message Modal (Replaces alert()) -->
+  <div id="messageModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50 transition-opacity duration-300 opacity-0">
+      <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm transform scale-95 transition-transform duration-300">
+        <h4 id="messageTitle" class="text-xl font-bold mb-3 text-red-600">Pesan!</h4>
+        <p id="messageText" class="text-gray-700 mb-6"></p>
+        <button id="closeModal" class="w-full bg-blue-500 text-white font-semibold p-3 rounded-lg">Tutup</button>
+      </div>
   </div>
-
-  <!-- 4. LOADING VIEW -->
-  <div id="view-loading" class="view-container text-center p-10">
-    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-    <p class="text-gray-600 font-semibold">Selamat datang di Portal REKAT! Silakan login atau daftar untuk melanjutkan.</p>
-  </div>
-</div>
-
-<!-- Global Message Modal (Replaces alert()) -->
-<div id="messageModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50 transition-opacity duration-300 opacity-0">
-    <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm transform scale-95 transition-transform duration-300">
-      <h4 id="messageTitle" class="text-xl font-bold mb-3 text-red-600">Pesan!</h4>
-      <p id="messageText" class="text-gray-700 mb-6"></p>
-      <button id="closeModal" class="w-full bg-blue-500 text-white font-semibold p-3 rounded-lg">Tutup</button>
-    </div>
-</div>
 
 <script type="module">
-// --- 1. IMPORT CONFIGURATION AND FIREBASE LIBRARIES ---
-import { firebaseConfig, CANVAS_APP_ID } from "./firebase_config.js";
+// --- 1. CONFIGURATION AND FIREBASE LIBRARIES ---
+// Global variables provided by the environment
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+// Firebase Imports
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, signInAnonymously, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, signInWithCustomToken, signInAnonymously, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
 // --- 2. INITIALIZATION ---
-// Menggunakan konfigurasi yang dimuat dari firebase_config.js
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 setLogLevel('Debug');
 
-// --- 3. GLOBAL VARIABLE SETUP ---
-// Gunakan CANVAS_APP_ID dari file konfigurasi untuk path (path) Firestore
-const appId = CANVAS_APP_ID; 
-
-// --- 4. UI REFERENCES & STATE ---
+// --- 3. GLOBAL STATE & UI REFERENCES ---
 const $ = id => document.getElementById(id);
 const views = ['view-loading', 'view-auth', 'view-profile-setup', 'view-dashboard'];
 let currentUser = null;
 let currentUserDoc = null;
 let selectedFile = null;
 
-// --- 5. UTILITY FUNCTIONS ---
+// --- 4. UTILITY FUNCTIONS ---
 
 // Function to handle showing different views
 function showView(targetViewId, title) {
@@ -170,17 +180,25 @@ function showView(targetViewId, title) {
     views.forEach(viewId => {
         const el = $(viewId);
         if (el) {
-            el.classList.add('hidden');
-            el.style.opacity = 0;
+            // Loading view is handled differently since it's an overlay
+            if (viewId === 'view-loading') {
+                el.classList.add('hidden', 'opacity-0');
+            } else {
+                el.classList.add('hidden');
+                el.style.opacity = 0;
+            }
         }
     });
 
     const targetEl = $(targetViewId);
     if (targetEl) {
-        targetEl.classList.remove('hidden');
-        setTimeout(() => {
-            targetEl.style.opacity = 1;
-        }, 10);
+        if (targetViewId === 'view-loading') {
+             targetEl.classList.remove('hidden', 'opacity-0');
+             setTimeout(() => { targetEl.classList.add('opacity-100'); }, 10);
+        } else {
+            targetEl.classList.remove('hidden');
+            setTimeout(() => { targetEl.style.opacity = 1; }, 10);
+        }
     }
 }
 
@@ -213,8 +231,8 @@ $("closeModal").onclick = () => {
 
 // --- PATH GENERATORS ---
 const getProfileDocRef = (uid) => {
-    // Path Firestore untuk data profil: /artifacts/{appId}/profiles/{userId}
-    return doc(db, `artifacts/${appId}/profiles`, uid); 
+    // Path Firestore: /artifacts/{appId}/users/{userId}/metadata/profile
+    return doc(db, `artifacts/${appId}/users/${uid}/metadata`, 'profile'); 
 };
 
 // Path Storage: /artifacts/{appId}/avatars/{userId}/{filename}
@@ -222,7 +240,7 @@ const getAvatarStorageRef = (uid, filename) => {
     return storageRef(storage, `artifacts/${appId}/avatars/${uid}/${filename}`);
 };
 
-// --- AUTHENTICATION STATE & VIEW MANAGEMENT ---
+// --- AUTHENTICATION & PROFILE LOGIC ---
 
 async function loadUserDoc(uid) {
   try {
@@ -257,9 +275,7 @@ async function loadUserDoc(uid) {
 
 async function renderApp(user) {
     if (!user) {
-        // User is signed out (or anonymous, but we show login if profile is mandatory)
-        showView('view-auth', 'Masuk ke Portal REKAT');
-        // Ensure initial forms are shown
+        showView('view-auth', 'Masuk atau Daftar ke Portal REKAT');
         $('form-login').classList.remove('hidden');
         $('form-register').classList.add('hidden');
         return;
@@ -268,18 +284,17 @@ async function renderApp(user) {
     currentUser = user;
     showView('view-loading', 'Memeriksa Profil...');
 
-    // PENTING: Jika pengguna adalah anonim, paksa mereka untuk Sign Up (bukan sign in anomim)
+    // If the user signed in anonymously, force them to sign out and register/login
     if (user.isAnonymous) {
-        // Sign out anonim agar user bisa daftar dengan email
         await signOut(auth);
-        showView('view-auth', 'Masuk atau Daftar ke REKAT');
+        showView('view-auth', 'Masuk atau Daftar ke Portal REKAT');
         return;
     }
 
     const profileExists = await loadUserDoc(user.uid);
 
     if (profileExists) {
-        showView('view-dashboard', 'Dashboard Profil');
+        showView('view-dashboard', 'Dashboard Profil Saya');
     } else {
         // User login/daftar, tapi belum punya dokumen profil. Arahkan ke setup.
         showView('view-profile-setup', 'Lengkapi Profil Anda');
@@ -291,29 +306,32 @@ onAuthStateChanged(auth, (user) => {
     renderApp(user);
 });
 
-// --- INITIAL AUTHENTICATION CHECK (MANDATORY for Firebase setup) ---
+// --- INITIAL AUTHENTICATION CHECK ---
 async function setupInitialAuth() {
-    // Menggunakan judul generik saat memuat, pesan selamat datang ada di paragraf bawah spinner
     showView('view-loading', 'Memuat Aplikasi...'); 
     try {
         await setPersistence(auth, browserSessionPersistence); 
-        await signInAnonymously(auth);
+        if (initialAuthToken) {
+            await signInWithCustomToken(auth, initialAuthToken);
+        } else {
+            await signInAnonymously(auth);
+        }
     } catch (error) {
         console.error("Initial authentication failed, attempting anonymous sign in:", error);
     }
 }
 setupInitialAuth();
 
-// --- EVENT HANDLERS ---
-
-// --- AUTH LOGIC (LOGIN/REGISTER) ---
+// --- EVENT HANDLERS (AUTH LOGIC) ---
 $('showRegister').onclick = () => {
     $('form-login').classList.add('hidden');
     $('form-register').classList.remove('hidden');
+    $('mainTitle').textContent = 'Daftar Akun Baru';
 };
 $('showLogin').onclick = () => {
     $('form-register').classList.add('hidden');
     $('form-login').classList.remove('hidden');
+    $('mainTitle').textContent = 'Masuk ke Portal REKAT';
 };
 
 $('btnRegister').onclick = async () => {
@@ -326,10 +344,12 @@ $('btnRegister').onclick = async () => {
     if (p1 !== p2) return showMessage("Password Tidak Sama", "Password yang Anda masukkan tidak cocok.");
     
     try {
+      showView('view-loading', 'Mendaftar...');
       await createUserWithEmailAndPassword(auth, email, p1);
-      // onAuthStateChanged akan menangani transisi ke profile setup
+      // onAuthStateChanged will handle the transition to profile setup
     } catch (e) {
       showMessage("Gagal Mendaftar", e.message);
+      renderApp(auth.currentUser); 
     }
 }
 
@@ -340,14 +360,16 @@ $('btnLogin').onclick = async () => {
     if (!email || !p) return showMessage("Data Belum Lengkap", "Harap isi Email dan Password untuk masuk.");
 
     try {
+      showView('view-loading', 'Masuk...');
       await signInWithEmailAndPassword(auth, email, p);
-      // onAuthStateChanged akan menangani sisa proses
+      // onAuthStateChanged will handle the rest of the process
     } catch (e) {
       showMessage("Login Gagal", "Email atau Password salah. Cek kembali kredensial Anda. (" + e.message + ")");
+      renderApp(auth.currentUser); 
     }
 }
 
-// --- PROFILE SETUP LOGIC ---
+// --- PROFILE SETUP & EDIT LOGIC ---
 $('saveSetupProfile').onclick = async () => {
   const name = $('setupName').value.trim();
   const role = $('setupRole').value;
@@ -367,10 +389,9 @@ $('saveSetupProfile').onclick = async () => {
       photoURL: null 
     };
     
-    await setDoc(getProfileDocRef(userId), profileData);
+    await setDoc(getProfileDocRef(userId), profileData, { merge: true });
     showMessage("Profil Disimpan", "Selamat datang di Portal REKAT!", false);
     
-    // Rerender app to show dashboard
     await renderApp(auth.currentUser);
 
   } catch (e) {
@@ -381,12 +402,11 @@ $('saveSetupProfile').onclick = async () => {
   }
 }
 
-// --- DASHBOARD EDIT LOGIC ---
-
 // Toggle edit
 $('editProfileBtn').onclick = () => {
   $('profileView').classList.add('hidden');
   $('profileEdit').classList.remove('hidden');
+  $('mainTitle').textContent = 'Ubah Profil';
   $('profileNameInput').value = currentUserDoc.name || '';
   $('profileRoleInput').value = currentUserDoc.role || '';
   $('fileNameDisplay').textContent = "Belum ada file dipilih.";
@@ -396,6 +416,7 @@ $('editProfileBtn').onclick = () => {
 $('cancelEditBtn').onclick = () => {
   $('profileEdit').classList.add('hidden');
   $('profileView').classList.remove('hidden');
+  $('mainTitle').textContent = 'Dashboard Profil Saya';
   $('profilePhotoInput').value = null;
   selectedFile = null;
 };
@@ -408,13 +429,16 @@ $('profilePhotoInput').addEventListener('change', e => {
     return;
   }
   
-  if (selectedFile.size > 5 * 1024 * 1024) { // 5MB limit
-    showMessage("Kesalahan File", "Ukuran file maksimal 5MB.");
+  // *** VALIDASI UKURAN FILE (Maksimal 5MB) ***
+  if (selectedFile.size > 5 * 1024 * 1024) { 
+    // Menampilkan modal pemberitahuan
+    showMessage("Kesalahan File", "Ukuran file foto maksimal adalah 5MB. Harap pilih file yang lebih kecil."); 
     selectedFile = null;
     $('profilePhotoInput').value = null;
     $('fileNameDisplay').textContent = "Ukuran file terlalu besar!";
     return;
   }
+  // **********************************************
   
   $('fileNameDisplay').textContent = selectedFile.name;
 });
@@ -434,7 +458,6 @@ $('saveProfileBtn').onclick = async () => {
     
     // 1. Upload new photo if selected
     if (selectedFile) {
-      // Nama file menggunakan timestamp dan nama file asli untuk memastikan keunikan
       const path = `${Date.now()}_${selectedFile.name}`;
       const sRef = getAvatarStorageRef(currentUser.uid, path);
       const uploadTask = uploadBytesResumable(sRef, selectedFile);
@@ -442,14 +465,13 @@ $('saveProfileBtn').onclick = async () => {
       await new Promise((resolve, reject) => {
         uploadTask.on('state_changed', 
           (snapshot) => {
-            // Menampilkan progress bar saat upload
             const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
             const state = snapshot.state === 'running' ? `Mengunggah... ${progress.toFixed(0)}%` : 'Menyimpan...';
             $('saveProfileBtn').textContent = state;
           }, 
           (error) => {
             console.error("Upload error:", error);
-            reject(new Error("Gagal mengunggah foto. Pastikan Storage Rules sudah diatur."));
+            reject(new Error("Gagal mengunggah foto."));
           }, 
           () => {
             resolve();
@@ -461,7 +483,7 @@ $('saveProfileBtn').onclick = async () => {
     }
     
     // 2. Save profile data to Firestore
-    $('saveProfileBtn').textContent = 'Menyimpan Profil...'; // Update status setelah unggah foto selesai
+    $('saveProfileBtn').textContent = 'Menyimpan Profil...'; 
     await setDoc(getProfileDocRef(currentUser.uid), {
       name,
       role,
@@ -473,6 +495,7 @@ $('saveProfileBtn').onclick = async () => {
     await loadUserDoc(currentUser.uid);
     $('profileEdit').classList.add('hidden');
     $('profileView').classList.remove('hidden');
+    $('mainTitle').textContent = 'Dashboard Profil Saya';
     selectedFile = null;
     showMessage('Berhasil', 'Profil Anda berhasil diperbarui!', false);
     
@@ -488,7 +511,6 @@ $('saveProfileBtn').onclick = async () => {
 $('logoutBtn').onclick = async () => { 
   try {
     await signOut(auth);
-    // onAuthStateChanged will handle showing view-auth
     showMessage("Berhasil Keluar", "Anda telah berhasil keluar dari REKAT.", false);
   } catch (e) {
     showMessage("Gagal Logout", e.message);
