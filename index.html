@@ -18,21 +18,23 @@
   }
   /* Custom glass style for form inputs: white/light-blue tint on glass */
   .glass-input {
-    /* bg-white/50: 50% white transparency */
-    /* border-blue-200/50: soft blue border */
     @apply bg-white/50 border border-blue-200/50 shadow-inner text-gray-800 placeholder-gray-500 transition duration-150;
   }
 
-  /* Adjustments for the right panel to ensure content fits */
   .flex-1\.3 {
     flex: 1.3;
   }
   
-  /* PENTING: Sembunyikan semua views secara default agar showView() yang mengaturnya */
-  /* view-auth akan langsung diaktifkan oleh JS tanpa penundaan */
-  #view-auth, #view-profile-setup, #view-dashboard, #view-loading {
+  /* PERBAIKAN KRUSIAL: view-auth TIDAK disembunyikan di CSS. */
+  /* Views lain yang TIDAK seharusnya terlihat di awal, kita sembunyikan. */
+  #view-profile-setup, #view-dashboard, #view-loading {
       display: none;
       opacity: 0;
+  }
+  /* view-auth harus terlihat oleh browser secara langsung sebelum JS jalan */
+  #view-auth {
+      opacity: 1; /* Pastikan opacity 1 agar langsung terlihat */
+      display: block; /* Pastikan terlihat */
   }
 
 </style>
@@ -47,16 +49,17 @@
       <div class="text-3xl font-extrabold mb-2">REKAT</div>
       <div class="text-xl font-semibold opacity-95">Ruang Edukasi Kolaborasi Aktivitas Trensains Tebuireng</div>
       <p class="text-sm opacity-80 mt-4 border-t border-white/30 pt-4">
-        Platform terintegrasi untuk mendukung aktivitas edukasi, dan kolaborasi.
+        Platform terintegrasi untuk mendukung aktivitas edukasi, kolaborasi, dan manajemen data sekolah.
       </p>
     </div>
 
     <!-- Right Panel: Dynamic Content (Auth, Dashboard) -->
     <div class="flex-1\.3 p-8 relative">
-      <!-- PERUBAHAN KRUSIAL: Judul default diubah agar tidak terlihat 'Memuat Portal' -->
+      <!-- Judul Awal Langsung Diatur ke Auth -->
       <h1 id="mainTitle" class="text-2xl font-bold mb-6 text-gray-800">Masuk atau Daftar ke Portal REKAT</h1>
 
       <!-- 1. AUTH VIEW (LOGIN/REGISTER) -->
+      <!-- View ini sekarang TIDAK disembunyikan oleh CSS -->
       <div id="view-auth" class="view-container">
         <!-- Login Form -->
         <div id="form-login" class="space-y-4">
@@ -77,7 +80,7 @@
       </div>
 
       <!-- 2. PROFILE SETUP VIEW -->
-      <div id="view-profile-setup" class="view-container hidden">
+      <div id="view-profile-setup" class="view-container">
         <h2 class="text-xl font-bold text-gray-800 mb-4">Lengkapi Profil</h2>
         <div class="space-y-4">
           <p class="text-gray-600 text-sm">Anda hanya perlu mengisi ini sekali.</p>
@@ -92,7 +95,7 @@
       </div>
 
       <!-- 3. DASHBOARD VIEW -->
-      <div id="view-dashboard" class="view-container hidden">
+      <div id="view-dashboard" class="view-container">
         <!-- Profile Display -->
         <div id="profileView" class="space-y-6">
           <h2 class="text-xl font-bold text-blue-700 mb-4">Ringkasan Profil</h2>
@@ -136,8 +139,7 @@
         </div>
       </div>
 
-      <!-- 4. LOADING VIEW (Updated for dynamic messaging) -->
-      <!-- Loading view akan muncul HANYA jika pengguna terdeteksi sudah login (sesi lama), lalu ia menghilang secepat mungkin -->
+      <!-- 4. LOADING VIEW -->
       <div id="view-loading" class="view-container text-center p-10 absolute inset-0 bg-white/50 backdrop-blur-sm flex flex-col items-center justify-center rounded-lg">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
         <p id="dynamicLoadingMessage" class="text-gray-600 font-semibold">Menghubungkan ke server...</p>
@@ -225,20 +227,35 @@ function showView(targetViewId, title) {
         stopLoadingAnimation();
     }
 
-    // 3. Sembunyikan semua views
+    // 3. Sembunyikan semua views KECUALI view-auth (yang sudah terlihat di CSS)
     views.forEach(viewId => {
         const el = $(viewId);
-        if (el) {
+        if (el && viewId !== 'view-auth') {
             el.style.display = 'none';
             el.style.opacity = 0;
+        } else if (el && viewId === 'view-auth') {
+            // view-auth selalu tampil block/opacity 1 secara default (dari CSS)
+            el.style.display = 'block'; 
+            el.style.opacity = 1;
         }
     });
 
-    // 4. Tampilkan target view
+    // 4. Tampilkan target view jika berbeda dari view-auth
     const targetEl = $(targetViewId);
     if (targetEl) {
+        // Jika target loading, gunakan flex untuk centering
         targetEl.style.display = (targetViewId === 'view-loading' ? 'flex' : 'block');
-        setTimeout(() => { targetEl.style.opacity = 1; }, 10);
+        
+        // PENTING: Sembunyikan view-auth jika kita beralih ke view lain.
+        if (targetViewId !== 'view-auth') {
+             const authEl = $('view-auth');
+             authEl.style.display = 'none';
+             authEl.style.opacity = 0;
+        }
+
+        setTimeout(() => { 
+            targetEl.style.opacity = 1; 
+        }, 10);
         
         if (targetViewId === 'view-loading') {
              startLoadingAnimation();
@@ -326,7 +343,7 @@ async function renderApp(user) {
     if (user) {
         currentUser = user;
         
-        // JIKA USER DITEMUKAN, BARU TAMPILKAN LOADING untuk cek Firestore (data profil)
+        // JIKA USER DITEMUKAN (sesi lama), BARU TAMPILKAN LOADING untuk cek Firestore (data profil)
         showView('view-loading', 'Memeriksa Profil...');
 
         // Jika pengguna anonim (dari signInAnonymously), paksa logout
@@ -345,7 +362,7 @@ async function renderApp(user) {
             showView('view-profile-setup', 'Lengkapi Profil Anda');
         }
     } else {
-        // Jika tidak ada user (null), pastikan Auth View terlihat
+        // Jika tidak ada user (null), pastikan Auth View terlihat (ini hanya dipanggil saat state berubah)
         showView('view-auth', 'Masuk atau Daftar ke Portal REKAT');
         $('form-login').classList.remove('hidden');
         $('form-register').classList.add('hidden');
@@ -361,33 +378,28 @@ onAuthStateChanged(auth, (user) => {
 
 // --- INITIAL AUTHENTICATION CHECK (Paling Krusial) ---
 async function setupInitialAuth() {
-    // 1. LANGSUNG TAMPILKAN AUTH VIEW SEBELUM MEMULAI PROSES ASINKRON APAPUN
-    // Teks judul sudah diset di HTML, showView di sini hanya memastikan visibilitas view-auth
-    showView('view-auth', 'Masuk atau Daftar ke Portal REKAT');
+    // KUNCI PERBAIKAN: view-auth SUDAH VISIBLE dari CSS.
+    // Kita TIDAK memanggil showView di sini, HANYA melanjutkan proses otentikasi di background.
 
     try {
-        // 2. Lakukan proses inisialisasi di latar belakang
         await setPersistence(auth, browserSessionPersistence); 
         isAuthReady = true;
 
-        // 3. Periksa status otentikasi yang tersimpan di sesi
+        // Jika ada sesi yang valid, panggil renderApp untuk beralih tampilan (dari auth ke loading/dashboard)
         if (auth.currentUser) {
-            // Jika ada sesi yang valid, panggil renderApp untuk beralih ke loading -> dashboard
             renderApp(auth.currentUser);
         } else if (initialAuthToken) {
-            // Coba login dengan custom token
             await signInWithCustomToken(auth, initialAuthToken);
         } else {
-            // Panggil sign in anonim agar onAuthStateChanged dipicu dengan user=null, 
-            // yang akan memastikan kita tetap di view-auth.
+            // Gunakan sign in anonim (untuk memicu onAuthStateChanged agar status auth terupdate)
+            // onAuthStateChanged akan memanggil renderApp(null), yang akan membiarkan tampilan tetap di view-auth
             await signInAnonymously(auth); 
         }
         
     } catch (error) {
         console.error("Initial authentication failed:", error);
         isAuthReady = true; 
-        // Jika ada error, tetap tampilkan Auth View
-        renderApp(null); 
+        // Jika ada error, view-auth tetap terlihat.
     }
 }
 // Panggil fungsi krusial ini segera setelah script dimuat.
@@ -505,7 +517,6 @@ $('profilePhotoInput').addEventListener('change', e => {
   
   // Validasi Ukuran File (Maksimal 5MB)
   if (selectedFile.size > 5 * 1024 * 1024) { 
-    // Menampilkan modal pemberitahuan (pop-up)
     showMessage("Kesalahan File", "Ukuran file foto maksimal adalah 5MB. Harap pilih file yang lebih kecil."); 
     selectedFile = null;
     $('profilePhotoInput').value = null;
