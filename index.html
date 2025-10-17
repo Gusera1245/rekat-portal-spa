@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>REKAT Portal — Autentikasi & Profil</title>
-<meta name="description" content="Portal Login dan Dashboard Profil REKAT Trensains Tebuireng." />
+<title>REKAT Portal — Ruang Edukasi Kolaborasi Aktivitas Trensains</title>
+<meta name="description" content="REKAT: Ruang Edukasi Kolaborasi Aktivitas Trensains Tebuireng." />
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -15,7 +15,8 @@
     min-height: 100vh;
     margin: 0;
     padding: 1rem;
-    background-color: #f0f4ff;
+    /* Latar belakang gradien biru muda untuk mendukung efek glassmorphism */
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%); 
     display: flex;
     align-items: center;
     justify-content: center;
@@ -27,28 +28,34 @@
 </head>
 <body class="p-4 sm:p-8">
 
-<div id="app-container" class="w-full max-w-xl bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl p-6 sm:p-8 transform transition-all duration-500">
-  <h1 id="mainTitle" class="text-3xl font-extrabold text-gray-800 mb-6 border-b pb-3">Memuat Aplikasi...</h1>
+<!-- Container dengan efek Glassmorphism (Classic White Glass) -->
+<div id="app-container" class="w-full max-w-xl bg-white/40 backdrop-blur-2xl border border-white/80 rounded-3xl shadow-2xl p-6 sm:p-8 transform transition-all duration-500">
+  
+  <!-- Judul utama akan diperbarui oleh JavaScript (ex: Masuk ke Portal REKAT) -->
+  <h1 id="mainTitle" class="text-3xl font-extrabold text-gray-800 mb-2">Memuat Aplikasi...</h1>
+  
+  <!-- Tagline REKAT yang sudah dikoreksi -->
+  <p class="text-gray-600 text-sm mb-6 border-b pb-3">REKAT: Ruang Edukasi Kolaborasi Aktivitas Trensains Tebuireng</p>
 
   <!-- 1. AUTH VIEW (LOGIN/REGISTER) -->
   <div id="view-auth" class="view-container hidden">
     <!-- Login Form -->
     <div id="form-login" class="space-y-4">
       <h2 class="text-xl font-bold mb-4 text-gray-700">Masuk ke REKAT</h2>
-      <input type="email" id="loginEmail" placeholder="Email" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500">
-      <input type="password" id="loginPassword" placeholder="Password" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500">
-      <button id="btnLogin" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold p-3 rounded-lg shadow-md transition duration-200">Masuk</button>
-      <button id="showRegister" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold p-3 rounded-lg border transition duration-150">Belum punya akun? Daftar</button>
+      <input type="email" id="loginEmail" placeholder="Email" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 bg-white/70">
+      <input type="password" id="loginPassword" placeholder="Password" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 bg-white/70">
+      <button id="btnLogin" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold p-3 rounded-lg shadow-md transition duration-200">Masuk</button>
+      <button id="showRegister" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold p-3 rounded-lg border border-gray-300 transition duration-150">Belum punya akun? Daftar</button>
     </div>
 
     <!-- Register Form -->
     <div id="form-register" class="hidden space-y-4">
       <h2 class="text-xl font-bold mb-4 text-gray-700">Daftar Akun Baru</h2>
-      <input type="email" id="regEmail" placeholder="Email" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500">
-      <input type="password" id="regPassword" placeholder="Password (min 6 karakter)" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500">
-      <input type="password" id="regPassword2" placeholder="Ulangi Password" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500">
-      <button id="btnRegister" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold p-3 rounded-lg shadow-md transition duration-200">Daftar Sekarang</button>
-      <button id="showLogin" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold p-3 rounded-lg border transition duration-150">Sudah punya akun? Masuk</button>
+      <input type="email" id="regEmail" placeholder="Email" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 bg-white/70">
+      <input type="password" id="regPassword" placeholder="Password (min 6 karakter)" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 bg-white/70">
+      <input type="password" id="regPassword2" placeholder="Ulangi Password" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 bg-white/70">
+      <button id="btnRegister" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold p-3 rounded-lg shadow-md transition duration-200">Daftar Sekarang</button>
+      <button id="showLogin" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold p-3 rounded-lg border border-gray-300 transition duration-150">Sudah punya akun? Masuk</button>
     </div>
   </div>
 
@@ -57,8 +64,8 @@
     <h2 class="text-2xl font-bold text-gray-800 mb-6">Lengkapi Profil</h2>
     <div class="space-y-4">
       <p class="text-gray-600">Anda perlu melengkapi profil sebelum mengakses Dashboard.</p>
-      <input type="text" id="setupName" placeholder="Nama Lengkap" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500">
-      <select id="setupRole" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 bg-white appearance-none">
+      <input type="text" id="setupName" placeholder="Nama Lengkap" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 bg-white/70">
+      <select id="setupRole" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 bg-white/70 appearance-none">
         <option value="" disabled selected>Pilih Peran Anda</option>
         <option>Guru Mapel</option><option>Staf TU</option><option>Sarana & Prasarana</option>
         <option>Kurikulum</option><option>Kesiswaan</option><option>Bendahara</option><option>KTU</option>
@@ -72,19 +79,19 @@
     <!-- Profile Display -->
     <div id="profileView" class="space-y-6">
       <h2 class="text-2xl font-bold text-blue-700 mb-4">Dashboard Saya</h2>
-      <div class="flex items-center gap-4 border p-4 rounded-xl bg-blue-50/50">
-        <div id="profilePhotoContainer" class="w-20 h-20 rounded-full overflow-hidden flex items-center justify-center bg-blue-500 text-white shadow-lg flex-shrink-0">
+      <div class="flex items-center gap-4 border border-blue-300/50 p-4 rounded-xl bg-blue-100/30">
+        <div id="profilePhotoContainer" class="w-20 h-20 rounded-full overflow-hidden flex items-center justify-center bg-blue-600 text-white shadow-lg flex-shrink-0">
           <div id="profilePhotoInitial" class="font-bold text-3xl">U</div>
         </div>
         <div class="flex-grow">
           <div id="displayName" class="font-bold text-xl text-gray-800"></div>
-          <div id="displayRole" class="text-md text-blue-600 font-semibold"></div>
+          <div id="displayRole" class="text-md text-blue-700 font-semibold"></div>
           <div id="displayEmail" class="text-sm text-gray-500 mt-1"></div>
         </div>
       </div>
       
-      <div class="text-xs text-gray-400 border-t pt-2">
-        User ID (Kolaborasi): <code id="userIdDisplay" class="font-mono text-xs bg-gray-100 p-1 rounded-md break-all"></code>
+      <div class="text-xs text-gray-500 border-t pt-2">
+        User ID (Kolaborasi): <code id="userIdDisplay" class="font-mono text-xs bg-gray-100/70 p-1 rounded-md break-all"></code>
       </div>
 
       <button id="editProfileBtn" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-semibold p-3 rounded-lg shadow-md transition duration-200 mt-4">Ubah Profil</button>
@@ -94,14 +101,14 @@
     <!-- Form Edit Profil (Hidden by default) -->
     <div id="profileEdit" class="hidden space-y-4">
       <h2 class="text-2xl font-bold text-gray-800 mb-4">Edit Profil</h2>
-      <input type="text" id="profileNameInput" placeholder="Nama Lengkap" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500">
-      <select id="profileRoleInput" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 bg-white appearance-none">
+      <input type="text" id="profileNameInput" placeholder="Nama Lengkap" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 bg-white/70">
+      <select id="profileRoleInput" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 bg-white/70 appearance-none">
         <option value="" disabled selected>Pilih Peran</option>
         <option value="Guru Mapel">Guru Mapel</option><option value="Staf TU">Staf TU</option><option value="Sarana & Prasarana">Sarana & Prasarana</option>
         <option value="Kurikulum">Kurikulum</option><option value="Kesiswaan">Kesiswaan</option><option value="Bendahara">Bendahara</option><option value="KTU">KTU</option>
       </select>
 
-      <label for="profilePhotoInput" class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold p-3 rounded-lg border border-gray-300 cursor-pointer transition duration-150">
+      <label for="profilePhotoInput" class="block w-full text-center bg-gray-200/50 hover:bg-gray-200 text-gray-700 font-semibold p-3 rounded-lg border border-gray-300 cursor-pointer transition duration-150">
         Pilih Foto Profil Baru (Maks 5MB)
       </label>
       <input type="file" id="profilePhotoInput" accept="image/*" class="hidden">
@@ -114,8 +121,8 @@
 
   <!-- 4. LOADING VIEW -->
   <div id="view-loading" class="view-container text-center p-10">
-    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-    <p class="text-gray-600 font-semibold">Memuat data pengguna...</p>
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+    <p class="text-gray-600 font-semibold">Selamat datang di Portal REKAT! Silakan login atau daftar untuk melanjutkan.</p>
   </div>
 </div>
 
@@ -204,18 +211,14 @@ $("closeModal").onclick = () => {
   }, 300);
 };
 
-// --- PATH GENERATORS (Perbaikan Error 'even number of segments') ---
-// Path Lama: /artifacts/{appId}/users/{userId}/data/profiles/{userId} (7 segmen - GAGAL)
-// Path Baru: /artifacts/{appId}/profiles/{userId} (4 segmen - BENAR)
+// --- PATH GENERATORS ---
 const getProfileDocRef = (uid) => {
     // Path Firestore untuk data profil: /artifacts/{appId}/profiles/{userId}
-    // Ini adalah path yang valid karena memiliki 4 segmen (genap): Collection/Document/Collection/Document
     return doc(db, `artifacts/${appId}/profiles`, uid); 
 };
 
-// Path Storage: /artifacts/{appId}/avatars/{userId}/photo/{filename}
+// Path Storage: /artifacts/{appId}/avatars/{userId}/{filename}
 const getAvatarStorageRef = (uid, filename) => {
-    // Path Storage: /artifacts/{appId}/avatars/{userId}/{filename}
     return storageRef(storage, `artifacts/${appId}/avatars/${uid}/${filename}`);
 };
 
@@ -240,7 +243,7 @@ async function loadUserDoc(uid) {
         container.style.backgroundColor = 'transparent';
         container.innerHTML = `<img src="${currentUserDoc.photoURL}" alt="${currentUserDoc.name || 'User'}'s profile photo" class="w-full h-full object-cover">`;
       } else {
-        container.style.backgroundColor = '#3B82F6';
+        container.style.backgroundColor = '#2563EB'; // Blue-600 for contrast
         container.innerHTML = `<div id="profilePhotoInitial" class="font-bold text-3xl">${currentUserDoc.name ? currentUserDoc.name[0].toUpperCase() : 'U'}</div>`;
       }
       return true; // Profile exists
@@ -290,9 +293,8 @@ onAuthStateChanged(auth, (user) => {
 
 // --- INITIAL AUTHENTICATION CHECK (MANDATORY for Firebase setup) ---
 async function setupInitialAuth() {
-    showView('view-loading', 'Memulai Aplikasi...');
-    // Di GitHub Pages, tidak ada token kustom, jadi kita inisiasi anonim lalu paksa logout
-    // agar onAuthStateChanged memicu tampilan login/daftar.
+    // Menggunakan judul generik saat memuat, pesan selamat datang ada di paragraf bawah spinner
+    showView('view-loading', 'Memuat Aplikasi...'); 
     try {
         await setPersistence(auth, browserSessionPersistence); 
         await signInAnonymously(auth);
@@ -362,7 +364,7 @@ $('saveSetupProfile').onclick = async () => {
       role, 
       email: auth.currentUser.email, 
       createdAt: new Date().toISOString(),
-      photoURL: null // Pastikan ada kunci untuk URL foto
+      photoURL: null 
     };
     
     await setDoc(getProfileDocRef(userId), profileData);
@@ -440,8 +442,10 @@ $('saveProfileBtn').onclick = async () => {
       await new Promise((resolve, reject) => {
         uploadTask.on('state_changed', 
           (snapshot) => {
+            // Menampilkan progress bar saat upload
             const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            $('saveProfileBtn').textContent = `Mengunggah... ${progress.toFixed(0)}%`;
+            const state = snapshot.state === 'running' ? `Mengunggah... ${progress.toFixed(0)}%` : 'Menyimpan...';
+            $('saveProfileBtn').textContent = state;
           }, 
           (error) => {
             console.error("Upload error:", error);
@@ -457,6 +461,7 @@ $('saveProfileBtn').onclick = async () => {
     }
     
     // 2. Save profile data to Firestore
+    $('saveProfileBtn').textContent = 'Menyimpan Profil...'; // Update status setelah unggah foto selesai
     await setDoc(getProfileDocRef(currentUser.uid), {
       name,
       role,
