@@ -129,35 +129,33 @@
 </div>
 
 <script type="module">
-// --- PENTING: Import konfigurasi dari file terpisah ---
+// --- 1. IMPORT CONFIGURATION AND FIREBASE LIBRARIES ---
 import { firebaseConfig, CANVAS_APP_ID } from "./firebase_config.js";
-
-// --- FIREBASE IMPORTS (v11.6.1) ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, signInAnonymously, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
-// --- GLOBAL VARIABLE SETUP (MODIFIED FOR GITHUB PAGES) ---
-// Kita tidak menggunakan token karena tidak ada di GitHub Pages, tapi kita butuh config
-const appId = CANVAS_APP_ID; // Ambil dari firebase_config.js
-
-// --- INITIALIZATION ---
-// Inisialisasi menggunakan konfigurasi yang kita buat (firebaseConfig)
-const app = initializeApp(firebaseConfig); 
+// --- 2. INITIALIZATION ---
+// Menggunakan konfigurasi yang dimuat dari firebase_config.js
+const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 setLogLevel('Debug');
 
-// --- UI REFERENCES ---
+// --- 3. GLOBAL VARIABLE SETUP ---
+// Gunakan CANVAS_APP_ID dari file konfigurasi untuk path (path) Firestore
+const appId = CANVAS_APP_ID; 
+
+// --- 4. UI REFERENCES & STATE ---
 const $ = id => document.getElementById(id);
 const views = ['view-loading', 'view-auth', 'view-profile-setup', 'view-dashboard'];
 let currentUser = null;
 let currentUserDoc = null;
 let selectedFile = null;
 
-// --- UTILITY FUNCTIONS ---
+// --- 5. UTILITY FUNCTIONS ---
 
 // Function to handle showing different views
 function showView(targetViewId, title) {
@@ -206,16 +204,19 @@ $("closeModal").onclick = () => {
   }, 300);
 };
 
-// Helper to construct the private Firestore path (MANDATORY)
+// --- PATH GENERATORS (Perbaikan Error 'even number of segments') ---
+// Path Lama: /artifacts/{appId}/users/{userId}/data/profiles/{userId} (7 segmen - GAGAL)
+// Path Baru: /artifacts/{appId}/profiles/{userId} (4 segmen - BENAR)
 const getProfileDocRef = (uid) => {
-    // Path: /artifacts/{appId}/users/{userId}/data/profiles/{userId}
-    return doc(db, `artifacts/${appId}/users/${uid}/data/profiles`, uid);
+    // Path Firestore untuk data profil: /artifacts/{appId}/profiles/{userId}
+    // Ini adalah path yang valid karena memiliki 4 segmen (genap): Collection/Document/Collection/Document
+    return doc(db, `artifacts/${appId}/profiles`, uid); 
 };
 
-// Helper to construct the private Storage path (MANDATORY)
+// Path Storage: /artifacts/{appId}/avatars/{userId}/photo/{filename}
 const getAvatarStorageRef = (uid, filename) => {
-    // Path: /artifacts/{appId}/users/{userId}/avatars/{filename}
-    return storageRef(storage, `artifacts/${appId}/users/${uid}/avatars/${filename}`);
+    // Path Storage: /artifacts/{appId}/avatars/{userId}/{filename}
+    return storageRef(storage, `artifacts/${appId}/avatars/${uid}/${filename}`);
 };
 
 // --- AUTHENTICATION STATE & VIEW MANAGEMENT ---
@@ -264,11 +265,20 @@ async function renderApp(user) {
     currentUser = user;
     showView('view-loading', 'Memeriksa Profil...');
 
+    // PENTING: Jika pengguna adalah anonim, paksa mereka untuk Sign Up (bukan sign in anomim)
+    if (user.isAnonymous) {
+        // Sign out anonim agar user bisa daftar dengan email
+        await signOut(auth);
+        showView('view-auth', 'Masuk atau Daftar ke REKAT');
+        return;
+    }
+
     const profileExists = await loadUserDoc(user.uid);
 
     if (profileExists) {
         showView('view-dashboard', 'Dashboard Profil');
     } else {
+        // User login/daftar, tapi belum punya dokumen profil. Arahkan ke setup.
         showView('view-profile-setup', 'Lengkapi Profil Anda');
     }
 }
@@ -278,19 +288,16 @@ onAuthStateChanged(auth, (user) => {
     renderApp(user);
 });
 
-// --- INITIAL AUTHENTICATION CHECK (MODIFIED) ---
+// --- INITIAL AUTHENTICATION CHECK (MANDATORY for Firebase setup) ---
 async function setupInitialAuth() {
     showView('view-loading', 'Memulai Aplikasi...');
+    // Di GitHub Pages, tidak ada token kustom, jadi kita inisiasi anonim lalu paksa logout
+    // agar onAuthStateChanged memicu tampilan login/daftar.
     try {
         await setPersistence(auth, browserSessionPersistence); 
-        // Karena tidak ada __initial_auth_token di GitHub Pages,
-        // kita paksa sign in secara anonim jika belum ada sesi.
-        if (!auth.currentUser) {
-            await signInAnonymously(auth);
-        }
+        await signInAnonymously(auth);
     } catch (error) {
         console.error("Initial authentication failed, attempting anonymous sign in:", error);
-        await signInAnonymously(auth);
     }
 }
 setupInitialAuth();
@@ -318,7 +325,7 @@ $('btnRegister').onclick = async () => {
     
     try {
       await createUserWithEmailAndPassword(auth, email, p1);
-      // onAuthStateChanged will handle the transition to profile setup
+      // onAuthStateChanged akan menangani transisi ke profile setup
     } catch (e) {
       showMessage("Gagal Mendaftar", e.message);
     }
@@ -332,7 +339,7 @@ $('btnLogin').onclick = async () => {
 
     try {
       await signInWithEmailAndPassword(auth, email, p);
-      // onAuthStateChanged will handle the rest
+      // onAuthStateChanged akan menangani sisa proses
     } catch (e) {
       showMessage("Login Gagal", "Email atau Password salah. Cek kembali kredensial Anda. (" + e.message + ")");
     }
@@ -350,7 +357,13 @@ $('saveSetupProfile').onclick = async () => {
 
   try {
     const userId = auth.currentUser.uid;
-    const profileData = { name, role, email: auth.currentUser.email, createdAt: new Date().toISOString() };
+    const profileData = { 
+      name, 
+      role, 
+      email: auth.currentUser.email, 
+      createdAt: new Date().toISOString(),
+      photoURL: null // Pastikan ada kunci untuk URL foto
+    };
     
     await setDoc(getProfileDocRef(userId), profileData);
     showMessage("Profil Disimpan", "Selamat datang di Portal REKAT!", false);
@@ -419,7 +432,8 @@ $('saveProfileBtn').onclick = async () => {
     
     // 1. Upload new photo if selected
     if (selectedFile) {
-      const path = `${currentUser.uid}/${Date.now()}_${selectedFile.name}`;
+      // Nama file menggunakan timestamp dan nama file asli untuk memastikan keunikan
+      const path = `${Date.now()}_${selectedFile.name}`;
       const sRef = getAvatarStorageRef(currentUser.uid, path);
       const uploadTask = uploadBytesResumable(sRef, selectedFile);
       
@@ -431,7 +445,7 @@ $('saveProfileBtn').onclick = async () => {
           }, 
           (error) => {
             console.error("Upload error:", error);
-            reject(new Error("Gagal mengunggah foto."));
+            reject(new Error("Gagal mengunggah foto. Pastikan Storage Rules sudah diatur."));
           }, 
           () => {
             resolve();
