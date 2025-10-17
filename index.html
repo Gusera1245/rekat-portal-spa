@@ -129,18 +129,22 @@
 </div>
 
 <script type="module">
+// --- PENTING: Import konfigurasi dari file terpisah ---
+import { firebaseConfig, CANVAS_APP_ID } from "./firebase_config.js";
+
 // --- FIREBASE IMPORTS (v11.6.1) ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, signInWithCustomToken, signInAnonymously, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, signInAnonymously, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
-// --- GLOBAL VARIABLE SETUP (MANDATORY FOR CANVAS) ---
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+// --- GLOBAL VARIABLE SETUP (MODIFIED FOR GITHUB PAGES) ---
+// Kita tidak menggunakan token karena tidak ada di GitHub Pages, tapi kita butuh config
+const appId = CANVAS_APP_ID; // Ambil dari firebase_config.js
 
 // --- INITIALIZATION ---
-const app = initializeApp(firebaseConfig);
+// Inisialisasi menggunakan konfigurasi yang kita buat (firebaseConfig)
+const app = initializeApp(firebaseConfig); 
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
@@ -274,15 +278,14 @@ onAuthStateChanged(auth, (user) => {
     renderApp(user);
 });
 
-// --- INITIAL AUTHENTICATION CHECK (MANDATORY) ---
+// --- INITIAL AUTHENTICATION CHECK (MODIFIED) ---
 async function setupInitialAuth() {
     showView('view-loading', 'Memulai Aplikasi...');
-    const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
     try {
         await setPersistence(auth, browserSessionPersistence); 
-        if (token) {
-            await signInWithCustomToken(auth, token);
-        } else {
+        // Karena tidak ada __initial_auth_token di GitHub Pages,
+        // kita paksa sign in secara anonim jika belum ada sesi.
+        if (!auth.currentUser) {
             await signInAnonymously(auth);
         }
     } catch (error) {
