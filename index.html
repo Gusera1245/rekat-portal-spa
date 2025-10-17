@@ -29,6 +29,7 @@
   }
   
   /* PENTING: Sembunyikan semua views secara default agar showView() yang mengaturnya */
+  /* view-auth akan langsung diaktifkan oleh JS tanpa penundaan */
   #view-auth, #view-profile-setup, #view-dashboard, #view-loading {
       display: none;
       opacity: 0;
@@ -52,8 +53,8 @@
 
     <!-- Right Panel: Dynamic Content (Auth, Dashboard) -->
     <div class="flex-1\.3 p-8 relative">
-      <!-- Title ini akan segera diganti oleh JS, tapi memberikan placeholder yang wajar -->
-      <h1 id="mainTitle" class="text-2xl font-bold mb-6 text-gray-800">Memuat Portal...</h1>
+      <!-- PERUBAHAN KRUSIAL: Judul default diubah agar tidak terlihat 'Memuat Portal' -->
+      <h1 id="mainTitle" class="text-2xl font-bold mb-6 text-gray-800">Masuk atau Daftar ke Portal REKAT</h1>
 
       <!-- 1. AUTH VIEW (LOGIN/REGISTER) -->
       <div id="view-auth" class="view-container">
@@ -136,9 +137,9 @@
       </div>
 
       <!-- 4. LOADING VIEW (Updated for dynamic messaging) -->
+      <!-- Loading view akan muncul HANYA jika pengguna terdeteksi sudah login (sesi lama), lalu ia menghilang secepat mungkin -->
       <div id="view-loading" class="view-container text-center p-10 absolute inset-0 bg-white/50 backdrop-blur-sm flex flex-col items-center justify-center rounded-lg">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <!-- Pesan Loading yang akan berganti secara otomatis -->
         <p id="dynamicLoadingMessage" class="text-gray-600 font-semibold">Menghubungkan ke server...</p>
         <p class="text-sm text-gray-500 mt-2">Harap tunggu, proses ini bergantung pada kecepatan koneksi internet Anda.</p>
       </div>
@@ -216,13 +217,15 @@ function stopLoadingAnimation() {
 
 // Function to handle showing different views
 function showView(targetViewId, title) {
+    // 1. Ganti Judul
     $('mainTitle').textContent = title;
     
-    // Stop loading animation if switching away from loading view
+    // 2. Kontrol Animasi Loading
     if (targetViewId !== 'view-loading') {
         stopLoadingAnimation();
     }
 
+    // 3. Sembunyikan semua views
     views.forEach(viewId => {
         const el = $(viewId);
         if (el) {
@@ -231,6 +234,7 @@ function showView(targetViewId, title) {
         }
     });
 
+    // 4. Tampilkan target view
     const targetEl = $(targetViewId);
     if (targetEl) {
         targetEl.style.display = (targetViewId === 'view-loading' ? 'flex' : 'block');
@@ -358,6 +362,7 @@ onAuthStateChanged(auth, (user) => {
 // --- INITIAL AUTHENTICATION CHECK (Paling Krusial) ---
 async function setupInitialAuth() {
     // 1. LANGSUNG TAMPILKAN AUTH VIEW SEBELUM MEMULAI PROSES ASINKRON APAPUN
+    // Teks judul sudah diset di HTML, showView di sini hanya memastikan visibilitas view-auth
     showView('view-auth', 'Masuk atau Daftar ke Portal REKAT');
 
     try {
@@ -368,7 +373,6 @@ async function setupInitialAuth() {
         // 3. Periksa status otentikasi yang tersimpan di sesi
         if (auth.currentUser) {
             // Jika ada sesi yang valid, panggil renderApp untuk beralih ke loading -> dashboard
-            // Ini akan mengganti view-auth dengan view-loading, lalu view-dashboard
             renderApp(auth.currentUser);
         } else if (initialAuthToken) {
             // Coba login dengan custom token
