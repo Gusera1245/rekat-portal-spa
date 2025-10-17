@@ -28,17 +28,12 @@
     flex: 1.3;
   }
   
-  /* PENTING: Sembunyikan semua views secara default, kecuali loading/auth untuk mencegah flicker */
-  #view-auth, #view-profile-setup, #view-dashboard {
+  /* PENTING: Sembunyikan semua views secara default agar showView() yang mengaturnya */
+  #view-auth, #view-profile-setup, #view-dashboard, #view-loading {
       display: none;
       opacity: 0;
   }
-  
-  /* Pastikan hanya view-loading yang terlihat di awal */
-  #view-loading {
-      display: flex; /* Ganti dari 'hidden' ke 'flex' di HTML */
-      opacity: 1;
-  }
+
 </style>
 </head>
 <body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-50 to-indigo-100 p-4 sm:p-6 font-sans">
@@ -57,6 +52,7 @@
 
     <!-- Right Panel: Dynamic Content (Auth, Dashboard) -->
     <div class="flex-1\.3 p-8 relative">
+      <!-- Title ini akan segera diganti oleh JS, tapi memberikan placeholder yang wajar -->
       <h1 id="mainTitle" class="text-2xl font-bold mb-6 text-gray-800">Memuat Portal...</h1>
 
       <!-- 1. AUTH VIEW (LOGIN/REGISTER) -->
@@ -237,7 +233,7 @@ function showView(targetViewId, title) {
 
     const targetEl = $(targetViewId);
     if (targetEl) {
-        targetEl.style.display = 'block';
+        targetEl.style.display = (targetViewId === 'view-loading' ? 'flex' : 'block');
         setTimeout(() => { targetEl.style.opacity = 1; }, 10);
         
         if (targetViewId === 'view-loading') {
@@ -322,9 +318,11 @@ async function loadUserDoc(uid) {
 async function renderApp(user) {
     if (!isAuthReady) return; 
 
-    // PENTING: Jika pengguna terotentikasi, kita Pindah ke View Loading untuk cek profil
+    // PENTING: Logika ini hanya dipanggil setelah otentikasi selesai
     if (user) {
         currentUser = user;
+        
+        // JIKA USER DITEMUKAN, BARU TAMPILKAN LOADING untuk cek Firestore (data profil)
         showView('view-loading', 'Memeriksa Profil...');
 
         // Jika pengguna anonim (dari signInAnonymously), paksa logout
@@ -343,7 +341,7 @@ async function renderApp(user) {
             showView('view-profile-setup', 'Lengkapi Profil Anda');
         }
     } else {
-        // Jika tidak ada user (null), langsung tampilkan formulir Auth
+        // Jika tidak ada user (null), pastikan Auth View terlihat
         showView('view-auth', 'Masuk atau Daftar ke Portal REKAT');
         $('form-login').classList.remove('hidden');
         $('form-register').classList.add('hidden');
@@ -359,36 +357,36 @@ onAuthStateChanged(auth, (user) => {
 
 // --- INITIAL AUTHENTICATION CHECK (Paling Krusial) ---
 async function setupInitialAuth() {
-    // 1. Tampilkan Auth View secara default (Ini adalah perubahannya)
-    showView('view-auth', 'Memuat Sesi Pengguna...'); 
+    // 1. LANGSUNG TAMPILKAN AUTH VIEW SEBELUM MEMULAI PROSES ASINKRON APAPUN
+    showView('view-auth', 'Masuk atau Daftar ke Portal REKAT');
 
     try {
-        // 2. Set ketahanan sesi
+        // 2. Lakukan proses inisialisasi di latar belakang
         await setPersistence(auth, browserSessionPersistence); 
-        
-        // 3. Tanda bahwa inisialisasi Firebase Auth sudah selesai
         isAuthReady = true;
 
-        // 4. Periksa status otentikasi (Cek ke server)
+        // 3. Periksa status otentikasi yang tersimpan di sesi
         if (auth.currentUser) {
-            // Jika ada sesi, renderApp akan memicu loading -> dashboard
+            // Jika ada sesi yang valid, panggil renderApp untuk beralih ke loading -> dashboard
+            // Ini akan mengganti view-auth dengan view-loading, lalu view-dashboard
             renderApp(auth.currentUser);
         } else if (initialAuthToken) {
             // Coba login dengan custom token
             await signInWithCustomToken(auth, initialAuthToken);
         } else {
-            // Jika tidak ada sesi, panggil signInAnonymously untuk memicu onAuthStateChanged(null)
-            // Ini akan memastikan renderApp(null) dipanggil, yang akan tetap di View Auth
+            // Panggil sign in anonim agar onAuthStateChanged dipicu dengan user=null, 
+            // yang akan memastikan kita tetap di view-auth.
             await signInAnonymously(auth); 
         }
         
     } catch (error) {
         console.error("Initial authentication failed:", error);
         isAuthReady = true; 
-        // Jika ada error fatal, pastikan Auth View tetap terlihat
+        // Jika ada error, tetap tampilkan Auth View
         renderApp(null); 
     }
 }
+// Panggil fungsi krusial ini segera setelah script dimuat.
 setupInitialAuth();
 
 
