@@ -34,12 +34,12 @@
   <!-- Main Application Container (Glassmorphism Effect) -->
   <div id="app-container" class="flex flex-col md:flex-row w-full max-w-4xl bg-white/70 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden">
     
-    <!-- Left Panel: Brand and Motto (Fixed Blue) -->
-    <div class="flex-1 bg-gradient-to-br from-blue-600 to-blue-500 text-white p-8 flex flex-col justify-center shadow-lg">
+    <!-- Panel Kiri: Brand dan Motto (Warna Biru yang Lebih Solid) -->
+    <div class="flex-1 bg-blue-700 bg-gradient-to-br from-blue-800 to-blue-600 text-white p-8 flex flex-col justify-center shadow-lg">
       <div class="text-3xl font-extrabold mb-2">REKAT</div>
       <div class="text-xl font-semibold opacity-95">Ruang Edukasi Kolaborasi Aktivitas Trensains Tebuireng</div>
       <p class="text-sm opacity-80 mt-4 border-t border-white/30 pt-4">
-        Platform terintegrasi untuk mendukung aktivitas edukasi, kolaborasi, dan administrasi sekolah.
+        Platform terintegrasi untuk mendukung aktivitas edukasi, kolaborasi, dan manajemen data sekolah.
       </p>
     </div>
 
@@ -130,7 +130,9 @@
       <!-- 4. LOADING VIEW -->
       <div id="view-loading" class="view-container text-center p-10 absolute inset-0 bg-white/50 backdrop-blur-sm flex flex-col items-center justify-center rounded-lg">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p class="text-gray-600 font-semibold">Memuat data dan mengautentikasi...</p>
+        <!-- Pesan Loading yang Lebih Informatif -->
+        <p class="text-gray-600 font-semibold">Menghubungkan ke server...</p>
+        <p class="text-sm text-gray-500 mt-2">Memeriksa sesi pengguna dan data profil awal.</p>
       </div>
 
     </div> <!-- End of Right Panel -->
@@ -296,7 +298,7 @@ async function renderApp(user) {
     if (profileExists) {
         showView('view-dashboard', 'Dashboard Profil Saya');
     } else {
-        // User login/daftar, tapi belum punya dokumen profil. Arahkan ke setup.
+        // User login/daftar, but missing profile document. Redirect to setup.
         showView('view-profile-setup', 'Lengkapi Profil Anda');
     }
 }
@@ -429,16 +431,15 @@ $('profilePhotoInput').addEventListener('change', e => {
     return;
   }
   
-  // *** VALIDASI UKURAN FILE (Maksimal 5MB) ***
+  // Validasi Ukuran File (Maksimal 5MB)
   if (selectedFile.size > 5 * 1024 * 1024) { 
-    // Menampilkan modal pemberitahuan
+    // Menampilkan modal pemberitahuan (pop-up)
     showMessage("Kesalahan File", "Ukuran file foto maksimal adalah 5MB. Harap pilih file yang lebih kecil."); 
     selectedFile = null;
     $('profilePhotoInput').value = null;
     $('fileNameDisplay').textContent = "Ukuran file terlalu besar!";
     return;
   }
-  // **********************************************
   
   $('fileNameDisplay').textContent = selectedFile.name;
 });
