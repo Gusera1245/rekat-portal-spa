@@ -507,6 +507,55 @@
 
     setupInitialAuth();
 </script>
+    <script type="module">
+        // 1. KUNCI RAHASIA: Tempel konfigurasi yang sudah Anda berikan.
+        const firebaseConfig = {
+          apiKey: "AIzaSyCIKKXwLPMnzYvoMSDAxZYoAz35vjbIKgQ",
+          authDomain: "learnhub-app-92559.firebaseapp.com",
+          projectId: "learnhub-app-92559",
+          storageBucket: "learnhub-app-92559.firebasestorage.app",
+          messagingSenderId: "525051273065",
+          appId: "1:525051273065:web:81f14a687e8632f3b7a7f8",
+          measurementId: "G-XT0GQQSM17"
+        };
+        
+        // 2. AKTIFKAN KONEKSI (PONDAKSI) dan ALAT AUTH (Layanan)
+        
+        // Impor alat-alat dari perpustakaan Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+        
+        // Bangun koneksi (Pondasi)
+        const app = initializeApp(firebaseConfig); 
+        
+        // Ambil alat untuk login/daftar (Kartu Akses)
+        const auth = getAuth(app); 
+        
+        
+        // 3. GUNAKAN ALAT (Contoh Daftar)
+        
+        function cobaDaftar(email, password) {
+             // Langsung gunakan alat 'auth' untuk daftar
+             createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    alert("Pendaftaran Berhasil!");
+                    console.log("Pengguna:", userCredential.user);
+                })
+                .catch((error) => {
+                    console.error("Gagal Daftar. Kode error:", error.code);
+                    alert("Gagal. Cek Console (F12) untuk detail error.");
+                });
+        }
+
+        // Panggil fungsi Anda di sini (misalnya, saat tombol diklik)
+        // cobaDaftar("tes@contoh.com", "sandi12345"); 
+        
+        // Coba Login Tamu (Anonim)
+        signInAnonymously(auth)
+            .then(() => console.log("Login Tamu Berhasil!"))
+            .catch((error) => console.error("Gagal Tamu:", error.code));
+
+    </script>
 </body>
 </html>
 
