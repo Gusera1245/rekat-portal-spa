@@ -1,493 +1,511 @@
 <!doctype html>
 <html lang="id">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>REKAT — Portal Login & Dashboard</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-<style>
-  body { font-family: 'Inter', sans-serif; }
-  .view-container { transition: opacity 0.3s ease-in-out; }
-  .glass-input { @apply bg-white/50 border border-blue-200/50 shadow-inner text-gray-800 placeholder-gray-500 transition duration-150; }
-  .flex-1\.3 { flex: 1.3; }
-  
-  /* Initial view state to prevent flash of content */
-  #view-profile-setup, #view-dashboard, #view-loading { display: none; opacity: 0; }
-  #view-auth { display: block; opacity: 1; }
-</style>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>REKAT: Ruang Kolaborasi Aktivitas TrenSains Tebuireng</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" xintegrity="sha512-Fo3rlrZj/k7ujTnHg4C+2G5eE3p2qWqf6+r5XzT5uQeYf7Gg8X3x5aA8p1l4g8tL+e8h5a5p3z5s9d5z7+7bQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .view { display: none; }
+        .active-view { display: block; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* Custom scrollbar for better mobile feel */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
 </head>
-<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-50 to-indigo-100 p-4 sm:p-6 font-sans">
+<body class="bg-gray-100 min-h-screen">
 
-  <!-- Main Application Container -->
-  <div id="app-container" class="flex flex-col md:flex-row w-full max-w-4xl bg-white/70 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden">
+<!-- Loading/Toast Container -->
+<div id="toast-container" class="fixed top-4 right-4 z-[1000] space-y-2"></div>
+<div id="view-loading" class="fixed inset-0 bg-white bg-opacity-80 flex items-center justify-center z-[999]">
+    <div class="flex flex-col items-center p-6 bg-white rounded-lg shadow-xl">
+        <div class="loader mb-3"></div>
+        <p id="loading-message" class="text-gray-700 font-semibold">Memuat...</p>
+    </div>
+</div>
+
+<!-- Main Application Wrapper -->
+<div id="app-container" class="max-w-md mx-auto bg-white shadow-lg min-h-screen">
     
-    <!-- Left Panel: Brand -->
-    <div class="flex-1 bg-blue-700 bg-gradient-to-br from-blue-800 to-blue-600 text-white p-8 flex flex-col justify-center shadow-lg">
-      <div class="text-3xl font-extrabold mb-2">REKAT</div>
-      <div class="text-xl font-semibold opacity-95">Ruang Edukasi Kolaborasi Aktivitas</div>
-      <p class="text-sm opacity-80 mt-4 border-t border-white/30 pt-4">
-        Platform terintegrasi untuk mendukung aktivitas edukasi, kolaborasi, dan manajemen data.
-      </p>
+    <!-- View 1: Auth (Login/Register) -->
+    <div id="view-auth" class="view active-view p-6 pt-12">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">Selamat Datang di REKAT</h1>
+        <!-- Judul aplikasi yang diperbarui -->
+        <p class="text-gray-500 mb-8">Ruang Kolaborasi Aktivitas TrenSains Tebuireng.</p>
+
+        <div id="auth-form" class="space-y-4">
+            <input type="email" id="auth-email" placeholder="Email Sekolah Anda" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" />
+            <input type="password" id="auth-password" placeholder="Kata Sandi (minimal 6 karakter)" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" />
+            
+            <button id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold p-3 rounded-lg shadow-md transition duration-200 flex items-center justify-center">
+                Masuk
+            </button>
+            <button id="btn-register" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold p-3 rounded-lg transition duration-200 flex items-center justify-center">
+                Daftar Akun Baru
+            </button>
+        </div>
+
+        <button id="btn-anon-login" class="mt-8 text-sm w-full text-center text-gray-500 hover:text-blue-600 transition duration-200">
+            Masuk sebagai Tamu (Lihat-Saja)
+        </button>
     </div>
 
-    <!-- Right Panel: Dynamic Content -->
-    <div class="flex-1\.3 p-8 relative">
-      <h1 id="mainTitle" class="text-2xl font-bold mb-6 text-gray-800">Masuk atau Daftar ke Portal REKAT</h1>
+    <!-- View 2: Profile Setup (Wajib setelah register) -->
+    <div id="view-profile-setup" class="view p-6 pt-12">
+        <h2 class="text-2xl font-bold text-gray-800 mb-2">Lengkapi Profil Anda</h2>
+        <p class="text-gray-500 mb-8">Informasi ini diperlukan untuk kolaborasi di sekolah.</p>
 
-      <!-- 1. AUTH VIEW (LOGIN/REGISTER) -->
-      <div id="view-auth" class="view-container">
-        <div id="form-login" class="space-y-4">
-          <input type="email" id="loginEmail" placeholder="Email" class="w-full p-3 border rounded-lg focus:ring-blue-500 glass-input">
-          <input type="password" id="loginPassword" placeholder="Password" class="w-full p-3 border rounded-lg focus:ring-blue-500 glass-input">
-          <button id="btnLogin" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold p-3 rounded-lg shadow-md transition duration-200">Masuk</button>
-          <button id="showRegister" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold p-3 rounded-lg border border-gray-300 transition duration-150">Belum punya akun? Daftar</button>
-        </div>
-        <div id="form-register" class="hidden space-y-4">
-          <input type="email" id="regEmail" placeholder="Email" class="w-full p-3 border rounded-lg focus:ring-blue-500 glass-input">
-          <input type="password" id="regPassword" placeholder="Password (min 6 karakter)" class="w-full p-3 border rounded-lg focus:ring-blue-500 glass-input">
-          <input type="password" id="regPassword2" placeholder="Ulangi Password" class="w-full p-3 border rounded-lg focus:ring-blue-500 glass-input">
-          <button id="btnRegister" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold p-3 rounded-lg shadow-md transition duration-200">Daftar Sekarang</button>
-          <button id="showLogin" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold p-3 rounded-lg border border-gray-300 transition duration-150">Sudah punya akun? Masuk</button>
-        </div>
-      </div>
-
-      <!-- 2. PROFILE SETUP VIEW -->
-      <div id="view-profile-setup" class="view-container">
-        <h2 class="text-xl font-bold text-gray-800 mb-4">Lengkapi Profil</h2>
         <div class="space-y-4">
-          <p class="text-gray-600 text-sm">Anda hanya perlu mengisi ini sekali.</p>
-          <input type="text" id="setupName" placeholder="Nama Lengkap" class="w-full p-3 border rounded-lg focus:ring-blue-500 glass-input">
-          <select id="setupRole" class="w-full p-3 border rounded-lg focus:ring-blue-500 glass-input appearance-none">
-            <option value="" disabled selected>Pilih Peran Anda</option>
-            <option>Guru Mapel</option><option>Staf TU</option><option>Sarana & Prasarana</option>
-            <option>Kurikulum</option><option>Kesiswaan</option><option>Bendahara</option><option>KTU</option>
-          </select>
-          <button id="saveSetupProfile" class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold p-3 rounded-lg shadow-md transition duration-200">Simpan Profil & Lanjutkan</button>
-        </div>
-      </div>
+            <input type="text" id="setup-name" placeholder="Nama Lengkap Anda" class="w-full p-3 border rounded-lg focus:ring-blue-500 focus:border-blue-500" />
+            
+            <select id="setup-role" class="w-full p-3 border rounded-lg bg-white focus:ring-blue-500 focus:border-blue-500">
+                <option value="" disabled selected>Pilih Peran Anda</option>
+                <option value="Guru Mapel">Guru Mata Pelajaran</option>
+                <option value="Guru BK">Guru BK</option>
+                <option value="Staff TU">Staff Tata Usaha</option>
+                <option value="Wali Kelas">Wali Kelas</option>
+                <option value="Administrator">Administrator</option>
+                <option value="Siswa">Siswa</option>
+            </select>
 
-      <!-- 3. DASHBOARD VIEW -->
-      <div id="view-dashboard" class="view-container">
-        <div id="profileView" class="space-y-6">
-          <h2 class="text-xl font-bold text-blue-700 mb-4">Ringkasan Profil</h2>
-          <div class="flex items-center gap-4 border border-blue-400/30 p-4 rounded-xl bg-blue-50/70 shadow-inner">
-            <div id="profilePhotoContainer" class="w-20 h-20 rounded-full overflow-hidden flex items-center justify-center bg-blue-600 text-white shadow-lg flex-shrink-0">
-              <div id="profilePhotoInitial" class="font-bold text-3xl">U</div>
+            <p class="text-sm text-gray-500 pt-2">Email: <span id="setup-email-display" class="font-semibold text-gray-700"></span></p>
+
+            <button id="btn-save-setup-profile" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold p-3 rounded-lg shadow-md transition duration-200">
+                Simpan Profil & Lanjutkan
+            </button>
+        </div>
+    </div>
+
+    <!-- View 3: Dashboard -->
+    <div id="view-dashboard" class="view">
+        <!-- Header Dashboard -->
+        <header class="bg-blue-600 text-white p-4 flex justify-between items-center shadow-lg">
+            <h2 class="text-xl font-bold">REKAT Dashboard</h2>
+            <div class="flex items-center space-x-3">
+                <button id="btn-edit-profile" class="text-white hover:text-blue-200 transition duration-200">
+                    <i class="fas fa-user-circle text-2xl"></i>
+                </button>
+                <button id="btn-logout" class="text-white hover:text-blue-200 transition duration-200 text-sm">
+                    <i class="fas fa-sign-out-alt"></i> Keluar
+                </button>
             </div>
-            <div class="flex-grow">
-              <div id="displayName" class="font-bold text-xl text-gray-800"></div>
-              <div id="displayRole" class="text-md text-blue-700 font-semibold"></div>
-              <div id="displayEmail" class="text-sm text-gray-500 mt-1"></div>
+        </header>
+
+        <!-- Content Dashboard -->
+        <div class="p-4 space-y-6">
+            <!-- Card Info Pengguna -->
+            <div class="bg-white p-4 rounded-xl shadow-md border border-gray-100">
+                <div class="flex items-center space-x-4">
+                    <img id="dashboard-photo" src="https://placehold.co/80x80/60a5fa/ffffff?text=P" onerror="this.src='https://placehold.co/80x80/60a5fa/ffffff?text=P'" class="w-16 h-16 rounded-full object-cover border-2 border-blue-400">
+                    <div>
+                        <p class="text-lg font-semibold text-gray-800" id="dashboard-name">Nama Pengguna</p>
+                        <p class="text-sm text-blue-600 font-medium" id="dashboard-role">Peran</p>
+                        <p class="text-xs text-gray-500" id="dashboard-email">email@sekolah.sch.id</p>
+                    </div>
+                </div>
             </div>
-          </div>
-          <div class="text-xs text-gray-500 border-t pt-2 border-blue-200/50">
-            User ID (Kolaborasi): <code id="userIdDisplay" class="font-mono text-xs bg-gray-100/70 p-1 rounded-md break-all"></code>
-          </div>
-          <button id="editProfileBtn" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-semibold p-3 rounded-lg shadow-md transition duration-200 mt-4">Ubah Profil</button>
-          <button id="logoutBtn" class="w-full bg-red-500 hover:bg-red-600 text-white font-semibold p-3 rounded-lg shadow-md transition duration-200">Keluar (Logout)</button>
+
+            <!-- Card Menu Cepat -->
+            <div class="bg-white p-4 rounded-xl shadow-md">
+                <h3 class="font-bold text-gray-700 mb-3">Menu Cepat</h3>
+                <div class="grid grid-cols-3 gap-4 text-center">
+                    <div class="p-3 bg-blue-50 rounded-lg text-blue-600 shadow-sm cursor-pointer hover:bg-blue-100 transition duration-150">
+                        <i class="fas fa-tasks text-xl mb-1"></i>
+                        <p class="text-xs">Tugas Harian</p>
+                    </div>
+                    <div class="p-3 bg-green-50 rounded-lg text-green-600 shadow-sm cursor-pointer hover:bg-green-100 transition duration-150">
+                        <i class="fas fa-users text-xl mb-1"></i>
+                        <p class="text-xs">Daftar Staf</p>
+                    </div>
+                    <div class="p-3 bg-yellow-50 rounded-lg text-yellow-600 shadow-sm cursor-pointer hover:bg-yellow-100 transition duration-150">
+                        <i class="fas fa-book text-xl mb-1"></i>
+                        <p class="text-xs">Materi Ajar</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center pt-4 text-xs text-gray-400">
+                ID Aplikasi: <code id="app-id-display" class="font-mono"></code>
+            </div>
         </div>
+    </div>
 
-        <div id="profileEdit" class="hidden space-y-4">
-          <h2 class="text-xl font-bold text-gray-800 mb-4">Edit Profil</h2>
-          <input type="text" id="profileNameInput" placeholder="Nama Lengkap" class="w-full p-3 border rounded-lg focus:ring-blue-500 glass-input">
-          <select id="profileRoleInput" class="w-full p-3 border rounded-lg focus:ring-blue-500 glass-input appearance-none">
-            <option value="" disabled selected>Pilih Peran</option>
-            <option value="Guru Mapel">Guru Mapel</option><option value="Staf TU">Staf TU</option><option value="Sarana & Prasarana">Sarana & Prasarana</option>
-            <option value="Kurikulum">Kurikulum</option><option value="Kesiswaan">Kesiswaan</option><option value="Bendahara">Bendahara</option><option value="KTU">KTU</option>
-          </select>
-          <label for="profilePhotoInput" class="block w-full text-center bg-gray-200/50 hover:bg-gray-200 text-gray-700 font-semibold p-3 rounded-lg border border-gray-300 cursor-pointer transition duration-150">
-            Pilih Foto Profil Baru (Maks 5MB)
-          </label>
-          <input type="file" id="profilePhotoInput" accept="image/*" class="hidden">
-          <div id="fileNameDisplay" class="text-sm text-gray-500 truncate">Belum ada file dipilih.</div>
-          <button id="saveProfileBtn" class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold p-3 rounded-lg shadow-md transition duration-200">Simpan Perubahan</button>
-          <button id="cancelEditBtn" class="w-full bg-gray-400 hover:bg-gray-500 text-white font-semibold p-3 rounded-lg transition duration-150">Batal</button>
+    <!-- View 4: Edit Profile -->
+    <div id="view-edit-profile" class="view p-6 pt-12">
+        <h2 class="text-2xl font-bold text-gray-800 mb-2">Ubah Profil</h2>
+        <p class="text-gray-500 mb-8">Perbarui informasi Anda kapan saja.</p>
+
+        <div class="space-y-4">
+            <!-- Photo Upload Placeholder -->
+            <div class="flex flex-col items-center mb-4">
+                <img id="edit-photo-preview" src="https://placehold.co/100x100/60a5fa/ffffff?text=P" onerror="this.src='https://placehold.co/100x100/60a5fa/ffffff?text=P'" class="w-24 h-24 rounded-full object-cover border-4 border-blue-400 mb-2">
+                <input type="file" id="edit-photo-input" accept="image/*" class="hidden" />
+                <button onclick="$('#edit-photo-input').click()" class="text-blue-600 text-sm hover:underline">
+                    Ganti Foto
+                </button>
+            </div>
+
+            <input type="text" id="edit-name" placeholder="Nama Lengkap Anda" class="w-full p-3 border rounded-lg focus:ring-blue-500 focus:border-blue-500" />
+            
+            <select id="edit-role" class="w-full p-3 border rounded-lg bg-white focus:ring-blue-500 focus:border-blue-500">
+                <option value="Guru Mapel">Guru Mata Pelajaran</option>
+                <option value="Guru BK">Guru BK</option>
+                <option value="Staff TU">Staff Tata Usaha</option>
+                <option value="Wali Kelas">Wali Kelas</option>
+                <option value="Administrator">Administrator</option>
+                <option value="Siswa">Siswa</option>
+            </select>
+
+            <button id="btn-save-edit-profile" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold p-3 rounded-lg shadow-md transition duration-200">
+                Simpan Perubahan
+            </button>
+            <button id="btn-cancel-edit" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold p-3 rounded-lg transition duration-200">
+                Batalkan
+            </button>
         </div>
-      </div>
+    </div>
 
-      <!-- 4. LOADING VIEW (Z-index high to prevent layering issues) -->
-      <div id="view-loading" class="view-container text-center p-10 absolute inset-0 bg-white/50 backdrop-blur-sm flex flex-col items-center justify-center rounded-lg z-50">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p id="dynamicLoadingMessage" class="text-gray-600 font-semibold">Menghubungkan ke server...</p>
-      </div>
+</div>
 
-    </div> <!-- End of Right Panel -->
-  </div> <!-- End of Main Container -->
-
-  <!-- Global Message Modal -->
-  <div id="messageModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50 transition-opacity duration-300 opacity-0">
-      <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm transform scale-95 transition-transform duration-300">
-        <h4 id="messageTitle" class="text-xl font-bold mb-3 text-red-600">Pesan!</h4>
-        <p id="messageText" class="text-gray-700 mb-6"></p>
-        <button id="closeModal" class="w-full bg-blue-500 text-white font-semibold p-3 rounded-lg">Tutup</button>
-      </div>
-  </div>
-
+<!-- Firebase & Application Logic -->
 <script type="module">
-// --- CONFIGURATION & FIREBASE SETUP ---
-// Variabel global yang disediakan oleh lingkungan Canvas (HARUS digunakan).
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+    // --- Global Configuration ---
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-// Mengimpor modul Firebase
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, signInWithCustomToken, signInAnonymously, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+    // --- Firebase Imports ---
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInAnonymously, signInWithCustomToken, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, onSnapshot, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
-// Inisialisasi Firebase. Ini adalah baris di mana kegagalan konfigurasi (API Key) akan terjadi.
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
-setLogLevel('Debug');
+    // --- Global Variables ---
+    let app, auth, db, storage;
+    let currentUserProfile = null;
+    const $ = id => document.getElementById(id);
 
-// --- GLOBAL STATE & UTILITIES ---
-const $ = id => document.getElementById(id);
-const views = ['view-loading', 'view-auth', 'view-profile-setup', 'view-dashboard'];
-let currentUser = null;
-let currentUserDoc = null;
-let selectedFile = null;
-let isAuthReady = false; 
+    // --- UI Utilities ---
+    function showView(viewId) {
+        document.querySelectorAll('.view').forEach(view => {
+            view.classList.remove('active-view');
+            view.style.display = 'none';
+        });
+        const view = $(viewId);
+        if (view) {
+            view.classList.add('active-view');
+            view.style.display = 'block';
+        }
+    }
 
-// Utilitas untuk pesan loading dinamis
-let loadingInterval = null;
-const dynamicMessages = ["Menghubungkan ke server...", "Memeriksa status otentikasi...", "Memuat data profil..."];
-let messageIndex = 0;
+    function showToast(message, type = 'info') {
+        const container = $('toast-container');
+        const color = type === 'error' ? 'red' : (type === 'success' ? 'green' : 'blue');
+        const icon = type === 'error' ? 'fa-exclamation-circle' : (type === 'success' ? 'fa-check-circle' : 'fa-info-circle');
 
-function startLoadingAnimation() {
-    const messageEl = $('dynamicLoadingMessage');
-    if (!messageEl) return;
-    clearInterval(loadingInterval);
-    messageIndex = 0;
-    loadingInterval = setInterval(() => {
-        messageEl.textContent = dynamicMessages[messageIndex];
-        messageIndex = (messageIndex + 1) % dynamicMessages.length;
-    }, 1500); 
-}
+        const toast = document.createElement('div');
+        toast.className = `p-3 pr-8 rounded-lg shadow-md flex items-center bg-${color}-50 border border-${color}-300 text-${color}-800`;
+        toast.innerHTML = `<i class="fas ${icon} mr-3"></i> <span>${message}</span>`;
+        
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.remove();
+        }, 5000);
+    }
 
-function stopLoadingAnimation() {
-    clearInterval(loadingInterval);
-    loadingInterval = null;
-}
+    function startLoading(message = 'Memuat...') {
+        $('loading-message').textContent = message;
+        $('view-loading').style.display = 'flex';
+    }
 
-/**
- * Mengganti tampilan aplikasi dengan animasi.
- */
-function showView(targetViewId, title) {
-    $('mainTitle').textContent = title;
+    function stopLoading() {
+        $('view-loading').style.display = 'none';
+    }
+
+    // --- Firestore Path Utilities ---
+    const getProfileDocRef = (uid) => {
+        return doc(db, `artifacts/${appId}/users/${uid}/metadata`, 'profile');
+    };
+
+    const getProfilePhotoRef = (uid) => {
+        return storageRef(storage, `artifacts/${appId}/users/${uid}/profile.jpg`);
+    };
+
+    // --- Core Application Logic ---
+
+    // Mengambil dan Menampilkan Profil Pengguna secara Real-Time
+    function setupProfileListener(uid) {
+        const profileDocRef = getProfileDocRef(uid);
+
+        // Hentikan listener lama jika ada
+        if (typeof window.unsubscribeProfile === 'function') {
+            window.unsubscribeProfile();
+        }
+
+        // Setup listener baru
+        window.unsubscribeProfile = onSnapshot(profileDocRef, (docSnap) => {
+            if (docSnap.exists()) {
+                currentUserProfile = docSnap.data();
+                checkUserProfileStatus(docSnap.data());
+                updateDashboard(docSnap.data());
+                updateEditProfileView(docSnap.data());
+            } else {
+                // Dokumen tidak ada, pengguna perlu melengkapi profil
+                currentUserProfile = null;
+                showProfileSetup();
+            }
+        }, (error) => {
+            console.error("Kesalahan membaca profil:", error);
+            showToast("Gagal memuat data profil. Cek koneksi Anda.", 'error');
+            // Jika ada error, bawa pengguna ke login untuk mencoba lagi
+            showView('view-auth');
+        });
+    }
     
-    if (targetViewId !== 'view-loading') { stopLoadingAnimation(); }
+    // Memuat profil untuk ditampilkan di Edit Profile
+    function updateEditProfileView(profile) {
+        $('edit-name').value = profile.name || '';
+        $('edit-role').value = profile.role || 'Guru Mapel';
+        
+        const photoURL = profile.photoURL || $('dashboard-photo').src;
+        $('edit-photo-preview').src = photoURL;
+        $('edit-photo-preview').onerror = () => {
+            $('edit-photo-preview').src = 'https://placehold.co/100x100/60a5fa/ffffff?text=P';
+        };
+    }
 
-    views.forEach(viewId => {
-        const el = $(viewId);
-        if (el) {
-            el.style.display = 'none';
-            el.style.opacity = 0;
+    // Memperbarui tampilan dashboard
+    function updateDashboard(profile) {
+        $('dashboard-name').textContent = profile.name || 'Pengguna Tidak Diketahui';
+        $('dashboard-role').textContent = profile.role || 'Peran Tidak Ditetapkan';
+        $('dashboard-email').textContent = auth.currentUser.email || 'anonim@rekat.sch.id';
+        
+        const photoURL = profile.photoURL || 'https://placehold.co/80x80/60a5fa/ffffff?text=P';
+        $('dashboard-photo').src = photoURL;
+        $('dashboard-photo').onerror = () => {
+            $('dashboard-photo').src = 'https://placehold.co/80x80/60a5fa/ffffff?text=P';
+        };
+    }
+
+    // Logika navigasi utama setelah Auth
+    function checkUserProfileStatus(profileData) {
+        if (!profileData || !profileData.name || !profileData.role) {
+            showProfileSetup();
+        } else {
+            showView('view-dashboard');
+            updateDashboard(profileData);
+        }
+    }
+
+    function showProfileSetup() {
+        $('setup-email-display').textContent = auth.currentUser.email || 'Anda masuk sebagai Tamu';
+        showView('view-profile-setup');
+    }
+
+    // --- Authentication Handlers ---
+
+    async function handleAuthAction(action) {
+        const email = $('auth-email').value.trim();
+        const password = $('auth-password').value.trim();
+
+        if (!email || password.length < 6) {
+            return showToast("Masukkan email valid dan kata sandi min 6 karakter.", 'error');
+        }
+
+        startLoading(action === 'login' ? 'Masuk...' : 'Mendaftar...');
+        try {
+            if (action === 'register') {
+                await createUserWithEmailAndPassword(auth, email, password);
+                showToast("Pendaftaran Berhasil! Silakan lengkapi profil.", 'success');
+            } else {
+                await signInWithEmailAndPassword(auth, email, password);
+                showToast("Selamat datang kembali!", 'success');
+            }
+            // onAuthStateChanged akan menangani navigasi
+        } catch (error) {
+            console.error(error);
+            showToast(`Gagal ${action === 'login' ? 'Masuk' : 'Daftar'}: ${error.message}`, 'error');
+        } finally {
+            stopLoading();
+        }
+    }
+
+    // --- Profile Handlers (Firestore Write) ---
+
+    // Handler saat pertama kali mengisi profil
+    async function saveSetupProfile() {
+        const name = $('setup-name').value.trim();
+        const role = $('setup-role').value;
+        const uid = auth.currentUser.uid;
+
+        if (!name || !role) {
+            return showToast("Nama dan Peran wajib diisi.", 'error');
+        }
+
+        startLoading('Menyimpan profil...');
+        try {
+            const profileData = { 
+                name, 
+                role, 
+                email: auth.currentUser.email, 
+                createdAt: new Date().toISOString(), 
+                photoURL: null 
+            };
+            
+            await setDoc(getProfileDocRef(uid), profileData, { merge: true });
+            
+            showToast("Profil berhasil disimpan!", 'success');
+            // Listener onSnapshot akan menangani navigasi ke dashboard
+        } catch (error) {
+            console.error("Gagal menyimpan profil:", error);
+            showToast("Gagal menyimpan profil. Cek log konsol.", 'error');
+        } finally {
+            stopLoading();
+        }
+    }
+
+    // Handler saat mengedit profil
+    async function saveProfileBtn() {
+        const name = $('edit-name').value.trim();
+        const role = $('edit-role').value;
+        const uid = auth.currentUser.uid;
+        const file = $('edit-photo-input').files[0];
+        
+        if (!name || !role) {
+            return showToast("Nama dan Peran wajib diisi.", 'error');
+        }
+
+        startLoading('Menyimpan perubahan...');
+
+        let photoURL = currentUserProfile ? currentUserProfile.photoURL : null;
+
+        try {
+            // 1. Upload Foto jika ada
+            if (file) {
+                const photoRef = getProfilePhotoRef(uid);
+                await uploadBytes(photoRef, file);
+                photoURL = await getDownloadURL(photoRef);
+            }
+
+            // 2. Simpan Data Profil
+            const profileData = { 
+                name, 
+                role, 
+                photoURL,
+                updatedAt: new Date().toISOString()
+            };
+            
+            await setDoc(getProfileDocRef(uid), profileData, { merge: true });
+            
+            showToast("Profil berhasil diperbarui!", 'success');
+            showView('view-dashboard'); // Kembali ke dashboard
+        } catch (error) {
+            console.error("Gagal menyimpan atau mengunggah foto:", error);
+            showToast("Gagal menyimpan perubahan. Cek log konsol.", 'error');
+        } finally {
+            stopLoading();
+        }
+    }
+
+    // --- Initialization ---
+
+    async function setupInitialAuth() {
+        startLoading("Menyiapkan layanan sekolah...");
+        
+        $('app-id-display').textContent = appId;
+        
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            storage = getStorage(app);
+            setLogLevel('Debug');
+            
+            // Pengaturan onAuthStateChanged
+            onAuthStateChanged(auth, async (user) => {
+                stopLoading();
+                if (user) {
+                    // Pengguna terotentikasi, mulai mendengarkan perubahan profil
+                    setupProfileListener(user.uid);
+                } else {
+                    // Pengguna keluar, tampilkan layar otentikasi
+                    if (typeof window.unsubscribeProfile === 'function') {
+                        window.unsubscribeProfile(); // Hentikan listener
+                    }
+                    showView('view-auth');
+                }
+            });
+
+            // Handle sign-in awal dari token lingkungan
+            if (initialAuthToken) {
+                await signInWithCustomToken(auth, initialAuthToken);
+            }
+
+        } catch (error) {
+            // Blok ini akan menangkap jika inisialisasi Firebase gagal total
+            console.error("KESALAHAN KRITIS INIT FIREBASE:", error);
+            showToast("Gagal memuat layanan. Cek konfigurasi Firebase.", 'error');
+            stopLoading();
+            showView('view-auth'); // Tetap tampilkan UI agar tombol bisa ditekan
+        }
+    }
+    
+    // --- Event Listeners ---
+    
+    // Auth Buttons
+    $('btn-login').addEventListener('click', () => handleAuthAction('login'));
+    $('btn-register').addEventListener('click', () => handleAuthAction('register'));
+    $('btn-anon-login').addEventListener('click', async () => {
+        startLoading('Masuk sebagai Tamu...');
+        try {
+            await signInAnonymously(auth);
+            showToast("Berhasil masuk sebagai Tamu.", 'success');
+        } catch (error) {
+            showToast("Gagal masuk sebagai Tamu.", 'error');
+        } finally {
+            stopLoading();
         }
     });
 
-    const targetEl = $(targetViewId);
-    if (targetEl) {
-        targetEl.style.display = (targetViewId === 'view-loading' ? 'flex' : 'block');
-        setTimeout(() => { targetEl.style.opacity = 1; }, 10);
-        if (targetViewId === 'view-loading') { startLoadingAnimation(); } 
-    }
-}
-
-/**
- * Menampilkan pesan menggunakan modal kustom (bukan alert/confirm).
- */
-function showMessage(title, text, isError = true) {
-  const modal = $("messageModal");
-  const titleEl = $("messageTitle");
-  
-  titleEl.textContent = title;
-  titleEl.classList.toggle('text-red-600', isError);
-  titleEl.classList.toggle('text-green-600', !isError);
-  $("messageText").textContent = text;
-  
-  modal.classList.remove('hidden', 'opacity-0');
-  modal.classList.add('flex', 'opacity-100');
-  modal.querySelector('div').classList.remove('scale-95');
-  modal.querySelector('div').classList.add('scale-100');
-}
-
-$("closeModal").onclick = () => {
-  const modal = $("messageModal");
-  modal.classList.remove('opacity-100');
-  modal.querySelector('div').classList.remove('scale-100');
-  modal.querySelector('div').classList.add('scale-95');
-  setTimeout(() => {
-    modal.classList.remove('flex');
-    modal.classList.add('hidden', 'opacity-0');
-  }, 300);
-};
-
-// --- FIREBASE PATHS ---
-// Path untuk dokumen profil pengguna (data private)
-const getProfileDocRef = (uid) => doc(db, `artifacts/${appId}/users/${uid}/metadata`, 'profile'); 
-// Path untuk penyimpanan foto profil
-const getAvatarStorageRef = (uid, filename) => storageRef(storage, `artifacts/${appId}/avatars/${uid}/${filename}`);
-
-// --- AUTH AND PROFILE LOGIC ---
-
-/**
- * Memuat dokumen profil pengguna dari Firestore.
- */
-async function loadUserDoc(uid) {
-  if (!isAuthReady) return false; 
-  try {
-    const snap = await getDoc(getProfileDocRef(uid));
-    if (snap.exists()) {
-      currentUserDoc = snap.data();
-      $('userIdDisplay').textContent = uid;
-      $('displayName').textContent = currentUserDoc.name || 'Nama Tidak Diatur';
-      $('displayRole').textContent = currentUserDoc.role || 'Peran Tidak Diatur';
-      $('displayEmail').textContent = currentUser.email;
-
-      // Menampilkan foto atau inisial
-      const container = $('profilePhotoContainer');
-      container.innerHTML = '';
-      if (currentUserDoc.photoURL) {
-        container.style.backgroundColor = 'transparent';
-        container.innerHTML = `<img src="${currentUserDoc.photoURL}" alt="${currentUserDoc.name || 'User'}'s profile photo" class="w-full h-full object-cover">`;
-      } else {
-        container.style.backgroundColor = '#2563EB';
-        container.innerHTML = `<div id="profilePhotoInitial" class="font-bold text-3xl">${currentUserDoc.name ? currentUserDoc.name[0].toUpperCase() : 'U'}</div>`;
-      }
-      return true;
-    }
-    return false;
-  } catch (e) {
-    console.error("Gagal memuat data profil:", e);
-    return false;
-  }
-}
-
-/**
- * Menentukan tampilan yang akan dimuat setelah autentikasi.
- */
-async function renderApp(user) {
-    if (!isAuthReady) return; 
-
-    // Jika pengguna terautentikasi dan BUKAN anonim
-    if (user && !user.isAnonymous) {
-        currentUser = user;
-        showView('view-loading', 'Memeriksa Profil...');
-
-        const profileExists = await loadUserDoc(user.uid);
-
-        if (profileExists) {
-            showView('view-dashboard', 'Dashboard Profil Saya');
-        } else {
-            showView('view-profile-setup', 'Lengkapi Profil Anda');
+    // Logout Button
+    $('btn-logout').addEventListener('click', async () => {
+        startLoading('Keluar...');
+        try {
+            await signOut(auth);
+            showToast("Anda telah keluar.", 'info');
+        } catch (error) {
+            showToast("Gagal keluar.", 'error');
         }
-    } else {
-        // Tampilkan Auth View jika tidak ada pengguna login (atau hanya anonim)
-        showView('view-auth', 'Masuk atau Daftar ke Portal REKAT');
-        $('form-login').classList.remove('hidden');
-        $('form-register').classList.add('hidden');
-    }
-}
+    });
 
-// Listener perubahan status autentikasi
-onAuthStateChanged(auth, (user) => {
-    if(isAuthReady) {
-        renderApp(user);
-    }
-});
+    // Profile Setup
+    $('btn-save-setup-profile').addEventListener('click', saveSetupProfile);
 
-// --- INITIAL AUTHENTICATION CHECK ---
-async function setupInitialAuth() {
-    try {
-        // Menggunakan session persistence
-        await setPersistence(auth, browserSessionPersistence); 
-        isAuthReady = true;
-
-        if (auth.currentUser) {
-            // Pengguna sudah login di session sebelumnya
-            renderApp(auth.currentUser);
-        } else if (initialAuthToken) {
-            // Menggunakan custom token yang disediakan lingkungan
-            await signInWithCustomToken(auth, initialAuthToken);
-        } else {
-            // Menggunakan sign-in anonim jika tidak ada token
-            await signInAnonymously(auth); 
+    // Edit Profile
+    $('btn-edit-profile').addEventListener('click', () => showView('view-edit-profile'));
+    $('btn-cancel-edit').addEventListener('click', () => showView('view-dashboard'));
+    $('btn-save-edit-profile').addEventListener('click', saveProfileBtn);
+    
+    // Preview image on file selection
+    $('edit-photo-input').addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                $('edit-photo-preview').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
         }
-        
-    } catch (error) {
-        // PENTING: Penanganan kegagalan inisialisasi (termasuk error API Key)
-        console.error("Initial authentication failed (Environment Error - Check API Key):", error);
-        isAuthReady = true; 
-        showMessage("Kesalahan Lingkungan", "Gagal menyambung ke server. Harap cek API Key di konsol. Anda dapat login manual.", true);
-        showView('view-auth', 'Masuk atau Daftar ke Portal REKAT'); 
-    }
-}
-setupInitialAuth();
+    });
 
-
-// --- EVENT HANDLERS ---
-$('showRegister').onclick = () => {
-    $('form-login').classList.add('hidden');
-    $('form-register').classList.remove('hidden');
-    $('mainTitle').textContent = 'Daftar Akun Baru';
-};
-$('showLogin').onclick = () => {
-    $('form-register').classList.add('hidden');
-    $('form-login').classList.remove('hidden');
-    $('mainTitle').textContent = 'Masuk ke Portal REKAT';
-};
-
-$('btnRegister').onclick = async () => {
-    const email = $('regEmail').value.trim();
-    const p1 = $('regPassword').value;
-    const p2 = $('regPassword2').value;
-    
-    if (!email || !p1 || !p2) return showMessage("Data Belum Lengkap", "Harap isi semua kolom pendaftaran.");
-    if (p1.length < 6) return showMessage("Password Lemah", "Password harus memiliki minimal 6 karakter.");
-    if (p1 !== p2) return showMessage("Password Tidak Sama", "Password yang Anda masukkan tidak cocok.");
-    
-    try {
-      showView('view-loading', 'Mendaftar...');
-      await createUserWithEmailAndPassword(auth, email, p1);
-    } catch (e) {
-      showMessage("Gagal Mendaftar", e.message);
-      showView('view-auth', 'Masuk atau Daftar ke Portal REKAT');
-      $('form-register').classList.remove('hidden');
-    }
-}
-
-$('btnLogin').onclick = async () => {
-    const email = $('loginEmail').value.trim();
-    const p = $('loginPassword').value;
-    
-    if (!email || !p) return showMessage("Data Belum Lengkap", "Harap isi Email dan Password untuk masuk.");
-
-    try {
-      showView('view-loading', 'Masuk...');
-      await signInWithEmailAndPassword(auth, email, p);
-    } catch (e) {
-      showMessage("Login Gagal", "Email atau Password salah. Cek kembali kredensial Anda. (" + e.message + ")");
-      showView('view-auth', 'Masuk atau Daftar ke Portal REKAT');
-      $('form-login').classList.remove('hidden');
-    }
-}
-
-$('saveSetupProfile').onclick = async () => {
-  const name = $('setupName').value.trim();
-  const role = $('setupRole').value;
-  if (!name || !role) return showMessage("Data Belum Lengkap", "Harap isi Nama Lengkap dan pilih Peran Anda.");
-  
-  $('saveSetupProfile').textContent = 'Menyimpan...';
-  $('saveSetupProfile').disabled = true;
-
-  try {
-    const profileData = { name, role, email: auth.currentUser.email, createdAt: new Date().toISOString(), photoURL: null };
-    // Simpan data profil ke Firestore
-    await setDoc(getProfileDocRef(auth.currentUser.uid), profileData, { merge: true });
-    
-    showMessage("Profil Disimpan", "Selamat datang di Portal REKAT!", false);
-    await renderApp(auth.currentUser); // Muat ulang UI untuk menampilkan dashboard
-  } catch (e) {
-    showMessage("Gagal Simpan Profil", e.message);
-  } finally {
-    $('saveSetupProfile').textContent = 'Simpan Profil & Lanjutkan';
-    $('saveSetupProfile').disabled = false;
-  }
-}
-
-// Edit Profile Handlers
-$('editProfileBtn').onclick = () => {
-  $('profileView').classList.add('hidden');
-  $('profileEdit').classList.remove('hidden');
-  $('mainTitle').textContent = 'Ubah Profil';
-  $('profileNameInput').value = currentUserDoc.name || '';
-  $('profileRoleInput').value = currentUserDoc.role || '';
-  $('fileNameDisplay').textContent = "Belum ada file dipilih.";
-  $('profilePhotoInput').value = null; 
-  selectedFile = null;
-};
-$('cancelEditBtn').onclick = () => {
-  $('profileEdit').classList.add('hidden');
-  $('profileView').classList.remove('hidden');
-  $('mainTitle').textContent = 'Dashboard Profil Saya';
-  selectedFile = null;
-};
-
-// Handle pemilihan file foto
-$('profilePhotoInput').addEventListener('change', e => {
-  selectedFile = e.target.files[0];
-  if (!selectedFile) {
-    $('fileNameDisplay').textContent = "Belum ada file dipilih.";
-    return;
-  }
-  // Batasi ukuran file
-  if (selectedFile.size > 5 * 1024 * 1024) { 
-    showMessage("Kesalahan File", "Ukuran file foto maksimal adalah 5MB."); 
-    selectedFile = null;
-    $('profilePhotoInput').value = null;
-    $('fileNameDisplay').textContent = "Ukuran file terlalu besar!";
-    return;
-  }
-  $('fileNameDisplay').textContent = selectedFile.name;
-});
-
-$('saveProfileBtn').onclick = async () => {
-  const name = $('profileNameInput').value.trim();
-  const role = $('profileRoleInput').value;
-  if (!name || !role) return showMessage('Data Belum Lengkap', 'Harap isi Nama Lengkap dan pilih Peran Anda.');
-  
-  $('saveProfileBtn').textContent = 'Menyimpan...';
-  $('saveProfileBtn').disabled = true;
-
-  try {
-    let photoURL = currentUserDoc.photoURL || null;
-    if (selectedFile) {
-      // Proses unggah foto ke Storage
-      const path = `${Date.now()}_${selectedFile.name}`;
-      const sRef = getAvatarStorageRef(currentUser.uid, path);
-      const uploadTask = uploadBytesResumable(sRef, selectedFile);
-      
-      await new Promise((resolve, reject) => {
-        uploadTask.on('state_changed', 
-          (snapshot) => {
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            $('saveProfileBtn').textContent = `Mengunggah... ${progress.toFixed(0)}%`;
-          }, (error) => { console.error("Upload error:", error); reject(new Error("Gagal mengunggah foto.")); }, resolve);
-      });
-      // Dapatkan URL publik setelah unggah selesai
-      photoURL = await getDownloadURL(uploadTask.snapshot.ref);
-    }
-    
-    // Simpan perubahan nama, peran, dan URL foto ke Firestore
-    await setDoc(getProfileDocRef(currentUser.uid), { name, role, email: currentUser.email, photoURL }, { merge: true });
-
-    await loadUserDoc(currentUser.uid); // Muat ulang data untuk update dashboard
-    $('profileEdit').classList.add('hidden');
-    $('profileView').classList.remove('hidden');
-    $('mainTitle').textContent = 'Dashboard Profil Saya';
-    selectedFile = null;
-    showMessage('Berhasil', 'Profil Anda berhasil diperbarui!', false);
-    
-  } catch (e) {
-    showMessage('Gagal Menyimpan', e.message);
-  } finally {
-    $('saveProfileBtn').textContent = 'Simpan Perubahan';
-    $('saveProfileBtn').disabled = false;
-  }
-};
-
-$('logoutBtn').onclick = async () => { 
-  try {
-    await signOut(auth);
-    showMessage("Berhasil Keluar", "Anda telah berhasil keluar dari REKAT.", false);
-  } catch (e) {
-    showMessage("Gagal Logout", e.message);
-  }
-};
+    setupInitialAuth();
 </script>
 </body>
 </html>
