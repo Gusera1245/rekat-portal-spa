@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Firestore Test - Injeksi Profil</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Inter', sans-serif; }
+</style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6">
+
+  <div class="w-full max-w-lg bg-white p-8 rounded-xl shadow-2xl border border-gray-100">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">Firestore Test: Injeksi Profil Uji</h1>
+    
+    <!-- Area Status -->
+    <div id="status" class="mb-4 p-4 text-sm rounded-lg border-l-4 border-yellow-500 bg-yellow-50 text-yellow-800">
+      Menunggu inisialisasi...
+    </div>
+
+    <!-- Kontrol Pengujian -->
+    <div id="controls" class="space-y-4 hidden">
+        <p class="text-sm text-gray-600">ID Pengguna Saat Ini: <code id="uidDisplay" class="font-mono text-xs bg-gray-100 p-1 rounded"></code></p>
+        
+        <input type="text" id="testName" placeholder="Nama Uji (e.g., Test User)" value="Test User" class="w-full p-3 border rounded-lg focus:ring-blue-500">
+        <input type="text" id="testRole" placeholder="Peran Uji (e.g., Administrator)" value="Administrator" class="w-full p-3 border rounded-lg focus:ring-blue-500">
+        
+        <button id="saveTestProfileBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold p-3 rounded-lg shadow-md transition duration-200">
+            1. Simpan Profil Uji ke Firestore
+        </button>
+        
+        <p class="mt-4 text-xs text-gray-500">
+            Setelah tombol diklik, periksa konsol Firebase Anda di path: <code>artifacts/{appId}/users/{userId}/metadata/profile</code>
+        </p>
+    </div>
+  </div>
+
+<script type="module">
+// --- CONFIGURATION & FIREBASE SETUP ---
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+// Import modul Firebase
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+const $ = id => document.getElementById(id);
+
+let app, auth, db;
+let userId = 'anon-test-user'; // Default sementara jika auth gagal
+
+// Utilitas status untuk feedback ke pengguna
+function updateStatus(message, isError = false) {
+    const statusEl = $('status');
+    statusEl.textContent = message;
+    
+    // Reset classes
+    statusEl.className = 'mb-4 p-4 text-sm rounded-lg border-l-4';
+
+    if (isError) {
+        statusEl.classList.add('border-red-500', 'bg-red-50', 'text-red-800');
+    } else if (message.includes('Berhasil')) {
+        statusEl.classList.add('border-green-500', 'bg-green-50', 'text-green-800');
+    } else {
+        statusEl.classList.add('border-yellow-500', 'bg-yellow-50', 'text-yellow-800');
+    }
+}
+
+// Inisialisasi dan Otentikasi
+async function initializeAndAuthenticate() {
+    updateStatus("Mencoba inisialisasi Firebase...");
+    try {
+        app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+        setLogLevel('Debug'); // Mengaktifkan log debug di konsol browser
+
+        updateStatus("Otentikasi: Mencoba masuk...");
+        
+        // Coba login dengan token kustom atau anonim jika token tidak ada
+        if (initialAuthToken) {
+            await signInWithCustomToken(auth, initialAuthToken);
+        } else {
+            await signInAnonymously(auth); 
+        }
+
+        userId = auth.currentUser.uid;
+        
+        $('uidDisplay').textContent = userId;
+        $('controls').classList.remove('hidden');
+        updateStatus("Berhasil tersambung. Klik tombol untuk menyimpan data uji.", false);
+        
+    } catch (error) {
+        console.error("Kesalahan Firebase:", error);
+        updateStatus(`Kesalahan Kritis: Gagal terhubung ke Firebase. Cek konfigurasi. (${error.message})`, true);
+    }
+}
+
+// Handler Simpan Data Uji ke Firestore
+$('saveTestProfileBtn').onclick = async () => {
+    if (!db) return updateStatus("Database tidak terinisialisasi. Coba refresh.", true);
+    
+    const name = $('testName').value.trim();
+    const role = $('testRole').value.trim();
+    const email = `${userId}@test.com`; 
+
+    const profileData = { 
+        name, 
+        role, 
+        email,
+        isTest: true, // Marker bahwa ini data uji
+        testId: Math.random().toString(36).substring(7), // ID unik untuk pengujian
+        savedAt: new Date().toISOString()
+    };
+
+    // Path dokumen: artifacts/{appId}/users/{userId}/metadata/profile
+    const profileDocRef = doc(db, `artifacts/${appId}/users/${userId}/metadata`, 'profile');
+
+    $('saveTestProfileBtn').textContent = 'Menyimpan...';
+    $('saveTestProfileBtn').disabled = true;
+
+    try {
+        await setDoc(profileDocRef, profileData, { merge: true });
+        updateStatus(`Berhasil! Dokumen 'profile' telah dibuat/diperbarui untuk UID: ${userId}. Cek konsol Firestore Anda.`, false);
+    } catch (e) {
+        console.error("Gagal menyimpan data uji:", e);
+        // Penting: Jika ada error "Permission Denied", ini menunjukkan masalah di Security Rules Anda
+        updateStatus(`Gagal menyimpan data (Cek Konsol Log): ${e.message}`, true);
+    } finally {
+        $('saveTestProfileBtn').textContent = '1. Simpan Profil Uji ke Firestore';
+        $('saveTestProfileBtn').disabled = false;
+    }
+};
+
+initializeAndAuthenticate();
+</script>
+</body>
+</html>
+
